@@ -130,26 +130,26 @@
 
 ### P3.1 — Bindings FFI CoreAudio (types & constantes)
 
-- [ ] `[IMPL]` Créer `src/audio_capture/ffi.rs`
-- [ ] `[IMPL]` Déclarer les types C nécessaires via `libc` : `OSStatus`, `AudioObjectID`, `AudioObjectPropertyAddress`, `AudioStreamBasicDescription`, `AudioBufferList`, `AudioBuffer`
-- [ ] `[IMPL]` Déclarer les constantes CoreAudio utilisées : `kAudioObjectPropertyScopeInput`, `kAudioHardwarePropertyDefaultInputDevice`, `kAudioObjectSystemObject`, `kAudioFormatLinearPCM`, `kAudioFormatFlagIsFloat`, `kAudioFormatFlagIsNonInterleaved`, `noErr`
-- [ ] `[IMPL]` Déclarer les fonctions FFI `extern "C"` : `AudioObjectGetPropertyData`, `AudioObjectSetPropertyData`, `AudioObjectGetPropertyDataSize`
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier que `noErr == 0` (constante de sanité)
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier que les tailles des structs C correspondent aux tailles attendues (`std::mem::size_of`)
+- [x] `[IMPL]` Créer `src/audio_capture/ffi.rs`
+- [x] `[IMPL]` Déclarer les types C nécessaires via `libc` : `OSStatus`, `AudioObjectID`, `AudioObjectPropertyAddress`, `AudioStreamBasicDescription`, `AudioBufferList`, `AudioBuffer`
+- [x] `[IMPL]` Déclarer les constantes CoreAudio utilisées : `kAudioObjectPropertyScopeInput`, `kAudioHardwarePropertyDefaultInputDevice`, `kAudioObjectSystemObject`, `kAudioFormatLinearPCM`, `kAudioFormatFlagIsFloat`, `kAudioFormatFlagIsNonInterleaved`, `noErr`
+- [x] `[IMPL]` Déclarer les fonctions FFI `extern "C"` : `AudioObjectGetPropertyData`, `AudioObjectSetPropertyData`, `AudioObjectGetPropertyDataSize`
+- [x] `[TEST-U]` **Test unitaire :** Vérifier que `noErr == 0` (constante de sanité)
+- [x] `[TEST-U]` **Test unitaire :** Vérifier que les tailles des structs C correspondent aux tailles attendues (`std::mem::size_of`)
 
 ### P3.2 — Sélection du device d'entrée par défaut
 
-- [ ] `[IMPL]` Créer `src/audio_capture/device.rs`
-- [ ] `[IMPL]` Implémenter `get_default_input_device() -> Result<AudioObjectID, AudioCaptureError>` — appelle `AudioObjectGetPropertyData` avec `kAudioHardwarePropertyDefaultInputDevice`
-- [ ] `[IMPL]` Implémenter `device_name(device_id: AudioObjectID) -> String` — récupère le nom du device pour les logs
-- [ ] `[TEST-I]` **Test d'intégration :** Appeler `get_default_input_device()` sur la machine de dev — doit retourner un ID non nul (nécessite microphone système)
-- [ ] `[TEST-U]` **Test unitaire (mock)** *(feature `mock_audio`)* : Simuler un retour `kAudioObjectUnknown` — vérifier que `DeviceNotFound` est retourné
+- [x] `[IMPL]` Créer `src/audio_capture/device.rs`
+- [x] `[IMPL]` Implémenter `get_default_input_device() -> Result<AudioObjectID, AudioCaptureError>` — appelle `AudioObjectGetPropertyData` avec `kAudioHardwarePropertyDefaultInputDevice`
+- [x] `[IMPL]` Implémenter `device_name(device_id: AudioObjectID) -> String` — récupère le nom du device pour les logs
+- [x] `[TEST-I]` **Test d'intégration :** Appeler `get_default_input_device()` sur la machine de dev — doit retourner un ID non nul (nécessite microphone système)
+- [x] `[TEST-U]` **Test unitaire (mock)** *(feature `mock_audio`)* : Simuler un retour `kAudioObjectUnknown` — vérifier que `DeviceNotFound` est retourné
 
 ### P3.3 — Vérification du format supporté
 
-- [ ] `[IMPL]` Implémenter `check_format_support(device_id: AudioObjectID, config: &AudioCaptureConfig) -> Result<(), AudioCaptureError>` — vérifie que le device supporte Float32 mono 16 kHz
-- [ ] `[TEST-I]` **Test d'intégration :** Appeler `check_format_support` avec la config nominale — doit retourner `Ok` sur toute machine Apple Silicon
-- [ ] `[TEST-U]` **Test unitaire (mock)** : Simuler un device qui ne supporte pas le format — vérifier que `FormatUnsupported` est retourné
+- [x] `[IMPL]` Implémenter `check_format_support(device_id: AudioObjectID, config: &AudioCaptureConfig) -> Result<(), AudioCaptureError>` — vérifie que le device supporte Float32 mono 16 kHz
+- [x] `[TEST-I]` **Test d'intégration :** Appeler `check_format_support` avec la config nominale — doit retourner `Ok` sur toute machine Apple Silicon
+- [x] `[TEST-U]` **Test unitaire (mock)** : Simuler un device qui ne supporte pas le format — vérifier que `FormatUnsupported` est retourné
 
 ---
 
