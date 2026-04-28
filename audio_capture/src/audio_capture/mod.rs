@@ -4,5 +4,7 @@ pub mod device;
 pub mod error;
 pub mod facade;
 pub mod ffi;
+#[cfg(feature = "mock_audio")]
+pub mod mock;
 pub mod ring_buffer;
 pub mod unit;

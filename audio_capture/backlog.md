@@ -261,32 +261,32 @@
 
 ### P7.1 — Organisation du dossier de tests
 
-- [ ] `[SETUP]` Créer `tests/audio_capture_integration.rs` comme fichier de tests d'intégration du crate
-- [ ] `[SETUP]` Séparer les tests nécessitant un microphone physique avec le tag `#[cfg(not(feature = "mock_audio"))]`
-- [ ] `[SETUP]` Créer un module de mock audio dans `src/audio_capture/mock.rs` (activé par feature `mock_audio`) qui simule un ring buffer pré-rempli avec un signal sinusoïdal connu
+- [x] `[SETUP]` Créer `tests/audio_capture_integration.rs` comme fichier de tests d'intégration du crate
+- [x] `[SETUP]` Séparer les tests nécessitant un microphone physique avec le tag `#[cfg(not(feature = "mock_audio"))]`
+- [x] `[SETUP]` Créer un module de mock audio dans `src/audio_capture/mock.rs` (activé par feature `mock_audio`) qui simule un ring buffer pré-rempli avec un signal sinusïoïdal connu
 
 ### P7.2 — Tests unitaires de régression
 
-- [ ] `[TEST-U]` **Régression :** Config default → validate → Ok
-- [ ] `[TEST-U]` **Régression :** Toutes les variantes de `AudioCaptureError` ont un Display non vide
-- [ ] `[TEST-U]` **Régression :** Ring buffer FIFO sur 1000 samples
-- [ ] `[TEST-U]` **Régression :** Ring buffer overflow → `dropped_samples` > 0
-- [ ] `[TEST-U]` **Régression :** Ring buffer thread-safety (producteur + consommateur simultanés)
-- [ ] `[TEST-U]` **Régression :** Tailles des structs FFI (`AudioComponentDescription`, `AudioStreamBasicDescription`)
+- [x] `[TEST-U]` **Régression :** Config default → validate → Ok
+- [x] `[TEST-U]` **Régression :** Toutes les variantes de `AudioCaptureError` ont un Display non vide
+- [x] `[TEST-U]` **Régression :** Ring buffer FIFO sur 1000 samples
+- [x] `[TEST-U]` **Régression :** Ring buffer overflow → `dropped_samples` > 0
+- [x] `[TEST-U]` **Régression :** Ring buffer thread-safety (producteur + consommateur simultanés)
+- [x] `[TEST-U]` **Régression :** Tailles des structs FFI (`AudioComponentDescription`, `AudioStreamBasicDescription`)
 
 ### P7.3 — Tests d'intégration de régression (mock)
 
-- [ ] `[TEST-I]` **Régression (mock)** : Cycle complet `new → start → drain → stop` avec signal sinusoïdal synthétique — vérifier le contenu des batches reçus
-- [ ] `[TEST-I]` **Régression (mock)** : Start sans stop → Drop — vérifier zéro resource leak (thread zombie interdit)
-- [ ] `[TEST-I]` **Régression (mock)** : Deux instances simultanées — vérifier l'isolation des ring buffers
+- [x] `[TEST-I]` **Régression (mock)** : Cycle complet `new → start → drain → stop` avec signal sinusïoïdal synthétique — vérifier le contenu des batches reçus
+- [x] `[TEST-I]` **Régression (mock)** : Start sans stop → Drop — vérifier zéro resource leak (thread zombie interdit)
+- [x] `[TEST-I]` **Régression (mock)** : Deux instances simultanées — vérifier l'isolation des ring buffers
 
 ### P7.4 — Tests d'intégration réels (avec microphone)
 
-- [ ] `[TEST-I]` **Réel :** Device par défaut détecté → ID non nul
-- [ ] `[TEST-I]` **Réel :** Format Float32 mono 16 kHz supporté par le device par défaut
-- [ ] `[TEST-I]` **Réel :** Capture 1 seconde → ≥ 15 000 samples reçus (tolérance de ±10% sur 16 000 attendus)
-- [ ] `[TEST-I]` **Réel :** Tous les samples dans `[-1.0, 1.0]`
-- [ ] `[TEST-I]` **Réel :** Drop rate < 0,1 % sur 5 secondes de capture
+- [x] `[TEST-I]` **Réel :** Device par défaut détecté → ID non nul
+- [x] `[TEST-I]` **Réel :** Format Float32 mono 16 kHz supporté par le device par défaut
+- [x] `[TEST-I]` **Réel :** Capture 1 seconde → ≥ 15 000 samples reçus (tolérance de ±10 % sur 16 000 attendus)
+- [x] `[TEST-I]` **Réel :** Tous les samples dans `[-1.0, 1.0]`
+- [x] `[TEST-I]` **Réel :** Drop rate < 0,1 % sur 5 secondes de capture
 
 ### P7.5 — Tests de performance
 
