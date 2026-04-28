@@ -305,23 +305,23 @@
 
 ### P8.1 — Documentation du module
 
-- [ ] `[SETUP]` Ajouter des doc-comments `///` sur tous les types et fonctions publics (`AudioCapture`, `AudioCaptureConfig`, `AudioCaptureError`)
-- [ ] `[SETUP]` Écrire un doc-example dans le commentaire de `AudioCapture::new` montrant le cycle minimal `new/start/stop`
-- [ ] `[TEST-U]` **Test :** `cargo doc --no-deps -p audio_capture` — doit s'exécuter sans erreur ni warning
+- [x] `[SETUP]` Ajouter des doc-comments `///` sur tous les types et fonctions publics (`AudioCapture`, `AudioCaptureConfig`, `AudioCaptureError`)
+- [x] `[SETUP]` Écrire un doc-example dans le commentaire de `AudioCapture::new` montrant le cycle minimal `new/start/stop`
+- [x] `[TEST-U]` **Test :** `cargo doc --no-deps -p audio_capture` — doit s'exécuter sans erreur ni warning
 
 ### P8.2 — Validation finale du module
 
-- [ ] `[VALID]` `cargo clippy -p audio_capture -- -D warnings` — zéro warning
-- [ ] `[VALID]` `cargo fmt --check -p audio_capture` — code formaté
-- [ ] `[VALID]` `cargo test -p audio_capture` — suite complète verte
-- [ ] `[VALID]` `cargo test -p audio_capture --features mock_audio` — suite mock verte (sans microphone)
-- [ ] `[VALID]` `cargo build -p audio_capture --release` — binaire release compile proprement
+- [x] `[VALID]` `cargo clippy -p audio_capture -- -D warnings` — zéro warning
+- [x] `[VALID]` `cargo fmt --check -p audio_capture` — code formaté
+- [x] `[VALID]` `cargo test -p audio_capture` — suite complète verte
+- [x] `[VALID]` `cargo test -p audio_capture --features mock_audio` — suite mock verte (sans microphone)
+- [x] `[VALID]` `cargo build -p audio_capture --release` — binaire release compile proprement
 
 ### P8.3 — Intégration dans le workspace
 
-- [ ] `[SETUP]` Vérifier que `audio_capture` est bien déclaré dans le `[workspace]` racine
-- [ ] `[SETUP]` Documenter dans `audio_capture/README.md` : prérequis, comment lancer les tests, comment utiliser l'API depuis un autre crate du workspace
-- [ ] `[TEST-I]` **Test d'intégration finale :** Depuis un crate `pipeline` factice (crate vide dans le workspace), importer `audio_capture` et appeler `AudioCapture::new(Default::default())` — doit compiler sans erreur
+- [x] `[SETUP]` Vérifier que `audio_capture` est bien déclaré dans le `[workspace]` racine
+- [x] `[SETUP]` Documenter dans `audio_capture/README.md` : prérequis, comment lancer les tests, comment utiliser l'API depuis un autre crate du workspace
+- [x] `[TEST-I]` **Test d'intégration finale :** Depuis un crate `pipeline` factice (crate vide dans le workspace), importer `audio_capture` et appeler `AudioCapture::new(Default::default())` — doit compiler sans erreur
 
 ---
 

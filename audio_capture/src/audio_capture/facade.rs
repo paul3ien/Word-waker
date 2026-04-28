@@ -19,12 +19,8 @@
 use std::sync::mpsc::Sender;
 
 use crate::audio_capture::{
-    config::AudioCaptureConfig,
-    consumer::AudioConsumer,
-    device::get_default_input_device,
-    error::AudioCaptureError,
-    ring_buffer::AudioRingBuffer,
-    unit::AudioUnitCapture,
+    config::AudioCaptureConfig, consumer::AudioConsumer, device::get_default_input_device,
+    error::AudioCaptureError, ring_buffer::AudioRingBuffer, unit::AudioUnitCapture,
 };
 
 /// Point d'entrée unique pour la capture audio.

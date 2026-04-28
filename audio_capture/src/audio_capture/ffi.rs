@@ -1,9 +1,15 @@
- //! Bindings FFI vers les API C de CoreAudio et AudioToolbox.
+//! Bindings FFI vers les API C de CoreAudio et AudioToolbox.
 //!
 //! Tous les types sont définis manuellement pour éviter toute dépendance
 //! vers des crates de bindings tiers — conformément aux contraintes du stack.
 
-#![allow(non_camel_case_types, non_snake_case, dead_code, non_upper_case_globals)]
+#![allow(
+    non_camel_case_types,
+    non_snake_case,
+    dead_code,
+    non_upper_case_globals,
+    missing_docs
+)]
 
 use libc::c_void;
 
@@ -297,16 +303,10 @@ extern "C" {
     ) -> OSStatus;
 
     /// Démarre le device (active le callback).
-    pub fn AudioDeviceStart(
-        inDevice: AudioObjectID,
-        inProcID: AudioDeviceIOProcID,
-    ) -> OSStatus;
+    pub fn AudioDeviceStart(inDevice: AudioObjectID, inProcID: AudioDeviceIOProcID) -> OSStatus;
 
     /// Arrête le device (désactive le callback).
-    pub fn AudioDeviceStop(
-        inDevice: AudioObjectID,
-        inProcID: AudioDeviceIOProcID,
-    ) -> OSStatus;
+    pub fn AudioDeviceStop(inDevice: AudioObjectID, inProcID: AudioDeviceIOProcID) -> OSStatus;
 }
 
 extern "C" {

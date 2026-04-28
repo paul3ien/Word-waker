@@ -3,10 +3,9 @@
 use crate::audio_capture::config::AudioCaptureConfig;
 use crate::audio_capture::error::AudioCaptureError;
 use crate::audio_capture::ffi::{
-    kAudioDevicePropertyNominalSampleRate,
-    kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyElementMain,
-    kAudioObjectPropertyScopeGlobal, kAudioObjectSystemObject, noErr,
-    AudioObjectGetPropertyData, AudioObjectID, AudioObjectPropertyAddress,
+    kAudioDevicePropertyNominalSampleRate, kAudioHardwarePropertyDefaultInputDevice,
+    kAudioObjectPropertyElementMain, kAudioObjectPropertyScopeGlobal, kAudioObjectSystemObject,
+    noErr, AudioObjectGetPropertyData, AudioObjectID, AudioObjectPropertyAddress,
 };
 use libc::c_void;
 
@@ -111,14 +110,18 @@ mod tests {
             return Err(AudioCaptureError::FormatUnsupported);
         }
         Ok(())
-}
+    }
 
     /// Test d'intégration réel — nécessite un microphone système.
     #[cfg(not(feature = "mock_audio"))]
     #[test]
     fn get_default_input_device_retourne_id_non_nul() {
         let result = get_default_input_device();
-        assert!(result.is_ok(), "Aucun device d'entrée trouvé : {:?}", result);
+        assert!(
+            result.is_ok(),
+            "Aucun device d'entrée trouvé : {:?}",
+            result
+        );
         assert_ne!(result.unwrap(), 0, "L'ID du device ne doit pas être 0");
     }
 
@@ -142,8 +145,7 @@ mod tests {
     #[cfg(not(feature = "mock_audio"))]
     #[test]
     fn check_format_support_ok_sur_device_reel() {
-        let device_id = get_default_input_device()
-            .expect("Microphone requis pour ce test");
+        let device_id = get_default_input_device().expect("Microphone requis pour ce test");
         let config = crate::audio_capture::config::AudioCaptureConfig::default();
         let result = check_format_support(device_id, &config);
         assert!(result.is_ok(), "Format non supporté : {:?}", result);
@@ -175,7 +177,9 @@ mod tests {
         let asbd = AudioStreamBasicDescription {
             mSampleRate: 44100.0,
             mFormatID: kAudioFormatLinearPCM,
-            mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked | kAudioFormatFlagIsNonInterleaved,
+            mFormatFlags: kAudioFormatFlagIsFloat
+                | kAudioFormatFlagIsPacked
+                | kAudioFormatFlagIsNonInterleaved,
             mBytesPerPacket: 4,
             mFramesPerPacket: 1,
             mBytesPerFrame: 4,

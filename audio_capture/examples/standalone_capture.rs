@@ -65,7 +65,10 @@ fn main() {
     println!("Hors [-1, 1]    : {out_of_range}");
     println!("─────────────────────────────────");
 
-    assert!(total_samples > 0, "Aucun sample reçu — vérifier le microphone");
+    assert!(
+        total_samples > 0,
+        "Aucun sample reçu — vérifier le microphone"
+    );
     assert_eq!(out_of_range, 0, "Des samples sont hors plage [-1.0, 1.0]");
     println!("OK — statistiques cohérentes.");
 }

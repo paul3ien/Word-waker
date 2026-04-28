@@ -6,16 +6,16 @@
 use crate::audio_capture::config::AudioCaptureConfig;
 use crate::audio_capture::error::AudioCaptureError;
 use crate::audio_capture::ffi::{
-    AudioComponentDescription, AudioComponentFindNext, AudioComponentInstanceDispose,
-    AudioComponentInstanceNew, AudioDeviceCreateIOProcID, AudioDeviceDestroyIOProcID,
-    AudioDeviceIOProcID, AudioDeviceStart, AudioDeviceStop, AudioObjectID,
-    AudioStreamBasicDescription, AudioTimeStamp, AudioBufferList, AudioUnit,
-    AudioUnitInitialize, AudioUnitSetProperty, AudioUnitUninitialize,
-    AudioOutputUnitStop, kAudioFormatFlagIsFloat, kAudioFormatFlagIsNonInterleaved,
-    kAudioFormatFlagIsPacked, kAudioFormatLinearPCM, kAudioOutputUnitProperty_CurrentDevice,
+    kAudioFormatFlagIsFloat, kAudioFormatFlagIsNonInterleaved, kAudioFormatFlagIsPacked,
+    kAudioFormatLinearPCM, kAudioOutputUnitProperty_CurrentDevice,
     kAudioOutputUnitProperty_EnableIO, kAudioUnitManufacturer_Apple,
     kAudioUnitProperty_StreamFormat, kAudioUnitScope_Global, kAudioUnitScope_Input,
     kAudioUnitScope_Output, kAudioUnitSubType_HALOutput, kAudioUnitType_Output, noErr,
+    AudioBufferList, AudioComponentDescription, AudioComponentFindNext,
+    AudioComponentInstanceDispose, AudioComponentInstanceNew, AudioDeviceCreateIOProcID,
+    AudioDeviceDestroyIOProcID, AudioDeviceIOProcID, AudioDeviceStart, AudioDeviceStop,
+    AudioObjectID, AudioOutputUnitStop, AudioStreamBasicDescription, AudioTimeStamp, AudioUnit,
+    AudioUnitInitialize, AudioUnitSetProperty, AudioUnitUninitialize,
 };
 use crate::audio_capture::ring_buffer::push_sample;
 use crossbeam::queue::ArrayQueue;
@@ -56,8 +56,7 @@ unsafe extern "C" fn device_io_callback(
     client_data: *mut libc::c_void,
 ) -> i32 {
     let ctx = &mut *(client_data as *mut CallbackContext);
-    ctx.fires
-        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    ctx.fires.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
     if in_input_data.is_null() {
         return noErr;
@@ -274,7 +273,12 @@ impl AudioUnitCapture {
 
         let mut proc_id: AudioDeviceIOProcID = ptr::null_mut();
         let status = unsafe {
-            AudioDeviceCreateIOProcID(self.device_id, device_io_callback, ctx_ptr as *mut libc::c_void, &mut proc_id)
+            AudioDeviceCreateIOProcID(
+                self.device_id,
+                device_io_callback,
+                ctx_ptr as *mut libc::c_void,
+                &mut proc_id,
+            )
         };
         if status != noErr {
             unsafe { drop(Box::from_raw(ctx_ptr)) };
@@ -331,9 +335,7 @@ impl AudioUnitCapture {
 mod tests {
     use super::*;
     use crate::audio_capture::{
-        config::AudioCaptureConfig,
-        device::get_default_input_device,
-        error::AudioCaptureError,
+        config::AudioCaptureConfig, device::get_default_input_device, error::AudioCaptureError,
         ring_buffer::AudioRingBuffer,
     };
 
@@ -357,7 +359,10 @@ mod tests {
     fn audio_unit_capture_new_echec_device_invalide() {
         let config = AudioCaptureConfig::default();
         let result = AudioUnitCapture::new(0xFFFF_FFFF, &config);
-        assert!(result.is_err(), "Attendu une erreur pour un device invalide");
+        assert!(
+            result.is_err(),
+            "Attendu une erreur pour un device invalide"
+        );
         let err = match result {
             Err(e) => e,
             Ok(_) => panic!("Attendu une erreur"),
@@ -401,7 +406,10 @@ mod tests {
         while consumer.pop().is_some() {
             count += 1;
         }
-        assert!(count > 0, "Aucun sample capturé après 200 ms (fires={fires})");
+        assert!(
+            count > 0,
+            "Aucun sample capturé après 200 ms (fires={fires})"
+        );
     }
 
     /// Vérifie que `AudioCaptureError` est Send + Sync (invariant existant).

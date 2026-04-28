@@ -122,7 +122,10 @@ mod tests {
 
         consumer.stop();
 
-        assert_eq!(received, expected, "Les samples reçus diffèrent de ceux envoyés");
+        assert_eq!(
+            received, expected,
+            "Les samples reçus diffèrent de ceux envoyés"
+        );
     }
 
     /// Lancer le consommateur sur un ring buffer vide :
@@ -162,10 +165,8 @@ mod tests {
     #[test]
     fn consommateur_integre_avec_capture_reelle() {
         use crate::audio_capture::{
-            config::AudioCaptureConfig,
-            device::get_default_input_device,
-            ring_buffer::AudioRingBuffer,
-            unit::AudioUnitCapture,
+            config::AudioCaptureConfig, device::get_default_input_device,
+            ring_buffer::AudioRingBuffer, unit::AudioUnitCapture,
         };
 
         let device_id = get_default_input_device().expect("Pas de device");
@@ -213,10 +214,8 @@ mod tests {
     #[test]
     fn consommateur_stop_pendant_capture_propre() {
         use crate::audio_capture::{
-            config::AudioCaptureConfig,
-            device::get_default_input_device,
-            ring_buffer::AudioRingBuffer,
-            unit::AudioUnitCapture,
+            config::AudioCaptureConfig, device::get_default_input_device,
+            ring_buffer::AudioRingBuffer, unit::AudioUnitCapture,
         };
 
         let device_id = get_default_input_device().expect("Pas de device");

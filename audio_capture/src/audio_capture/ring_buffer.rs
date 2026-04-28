@@ -168,7 +168,10 @@ mod tests {
             consumed + remaining + drops,
             N,
             "consumed={}, remaining={}, drops={}, N={}",
-            consumed, remaining, drops, N
+            consumed,
+            remaining,
+            drops,
+            N
         );
     }
 }

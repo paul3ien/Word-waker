@@ -37,7 +37,9 @@ fn regression_error_display_non_vide() {
 /// Ring buffer FIFO sur 1000 samples.
 #[test]
 fn regression_ring_buffer_fifo_1000() {
-    use audio_capture::audio_capture::ring_buffer::{drain_available, push_sample, AudioRingBuffer};
+    use audio_capture::audio_capture::ring_buffer::{
+        drain_available, push_sample, AudioRingBuffer,
+    };
     use std::sync::atomic::AtomicUsize;
     use std::sync::Arc;
 
@@ -78,7 +80,9 @@ fn regression_ring_buffer_overflow_dropped() {
 /// Ring buffer thread-safety : producteur + consommateur simultanés.
 #[test]
 fn regression_ring_buffer_thread_safety() {
-    use audio_capture::audio_capture::ring_buffer::{drain_available, push_sample, AudioRingBuffer};
+    use audio_capture::audio_capture::ring_buffer::{
+        drain_available, push_sample, AudioRingBuffer,
+    };
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::Arc;
     use std::thread;
@@ -163,10 +167,7 @@ fn regression_mock_cycle_complet() {
 
     // Vérifier que les valeurs sont dans [-1.0, 1.0].
     for &s in &received {
-        assert!(
-            (-1.0..=1.0).contains(&s),
-            "Sample mock hors plage : {s}"
-        );
+        assert!((-1.0..=1.0).contains(&s), "Sample mock hors plage : {s}");
     }
 
     // Vérifier la cohérence avec le signal sinusoïdal attendu.
@@ -183,9 +184,7 @@ fn regression_mock_cycle_complet() {
 #[cfg(feature = "mock_audio")]
 #[test]
 fn regression_mock_drop_sans_stop() {
-    use audio_capture::audio_capture::{
-        consumer::AudioConsumer, mock::filled_mock_queue,
-    };
+    use audio_capture::audio_capture::{consumer::AudioConsumer, mock::filled_mock_queue};
     use std::sync::mpsc;
 
     let queue = filled_mock_queue(1600);
@@ -266,7 +265,8 @@ fn integration_device_par_defaut_non_nul() {
 #[test]
 fn integration_format_float32_supporte() {
     use audio_capture::audio_capture::{
-        config::AudioCaptureConfig, device::{check_format_support, get_default_input_device},
+        config::AudioCaptureConfig,
+        device::{check_format_support, get_default_input_device},
     };
     let id = get_default_input_device().expect("Pas de device");
     check_format_support(id, &AudioCaptureConfig::default())
@@ -310,10 +310,7 @@ fn integration_samples_dans_plage() {
 
     for batch in rx.try_iter() {
         for s in batch {
-            assert!(
-                (-1.0..=1.0).contains(&s),
-                "Sample hors plage : {s}"
-            );
+            assert!((-1.0..=1.0).contains(&s), "Sample hors plage : {s}");
         }
     }
 }
