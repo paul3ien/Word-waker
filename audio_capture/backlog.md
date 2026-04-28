@@ -29,36 +29,36 @@
 
 ### P0.1 — Vérification de la toolchain
 
-- [ ] `[SETUP]` Vérifier que Rust stable ≥ 1.78 est installé (`rustup show`)
-- [ ] `[SETUP]` Vérifier que la target `aarch64-apple-darwin` est active (machine Apple Silicon native)
-- [ ] `[SETUP]` Vérifier que Xcode Command Line Tools est installé (`xcode-select --install` si absent) — requis pour les headers CoreAudio
-- [ ] `[SETUP]` Vérifier la présence des frameworks : `CoreAudio.framework`, `AudioToolbox.framework`, `Foundation.framework` dans `/Library/Developer/CommandLineTools/SDKs/`
-- [ ] `[TEST-U]` **Test de smoke :** `rustc --version && cargo --version` — les deux doivent répondre sans erreur
+- [x] `[SETUP]` Vérifier que Rust stable ≥ 1.78 est installé (`rustup show`)
+- [x] `[SETUP]` Vérifier que la target `aarch64-apple-darwin` est active (machine Apple Silicon native)
+- [x] `[SETUP]` Vérifier que Xcode Command Line Tools est installé (`xcode-select --install` si absent) — requis pour les headers CoreAudio
+- [x] `[SETUP]` Vérifier la présence des frameworks : `CoreAudio.framework`, `AudioToolbox.framework`, `Foundation.framework` dans `/Library/Developer/CommandLineTools/SDKs/`
+- [x] `[TEST-U]` **Test de smoke :** `rustc --version && cargo --version` — les deux doivent répondre sans erreur
 
 ### P0.2 — Création de la structure du projet Cargo
 
-- [ ] `[SETUP]` Initialiser le workspace Cargo à la racine du projet (`Cargo.toml` workspace)
-- [ ] `[SETUP]` Créer le crate `audio_capture` comme library crate (`cargo new --lib audio_capture`)
-- [ ] `[SETUP]` Ajouter `audio_capture` dans le `[workspace]` du `Cargo.toml` racine
-- [ ] `[SETUP]` Créer le fichier `build.rs` vide à la racine du crate `audio_capture`
-- [ ] `[SETUP]` Créer l'arborescence initiale : `src/`, `src/audio_capture/`, `tests/`
-- [ ] `[TEST-U]` **Test de smoke :** `cargo check -p audio_capture` — doit compiler sans erreur ni warning
+- [x] `[SETUP]` Initialiser le workspace Cargo à la racine du projet (`Cargo.toml` workspace)
+- [x] `[SETUP]` Créer le crate `audio_capture` comme library crate (`cargo new --lib audio_capture`)
+- [x] `[SETUP]` Ajouter `audio_capture` dans le `[workspace]` du `Cargo.toml` racine
+- [x] `[SETUP]` Créer le fichier `build.rs` vide à la racine du crate `audio_capture`
+- [x] `[SETUP]` Créer l'arborescence initiale : `src/`, `src/audio_capture/`, `tests/`
+- [x] `[TEST-U]` **Test de smoke :** `cargo check -p audio_capture` — doit compiler sans erreur ni warning
 
 ### P0.3 — Configuration des dépendances initiales
 
-- [ ] `[SETUP]` Ajouter `crossbeam = "0.8"` dans `[dependencies]` du crate
-- [ ] `[SETUP]` Ajouter `libc = "0.2"` dans `[dependencies]`
-- [ ] `[SETUP]` Ajouter `anyhow = "1.0"` dans `[dependencies]`
-- [ ] `[SETUP]` Ajouter `tracing = "0.1"` et `tracing-subscriber = "0.3"` dans `[dependencies]`
-- [ ] `[SETUP]` Configurer le `build.rs` : écrire les `println!("cargo:rustc-link-lib=framework=...")` pour `CoreAudio`, `AudioToolbox`, `Foundation`
-- [ ] `[TEST-U]` **Test :** `cargo build -p audio_capture` — doit compiler et linker les frameworks Apple sans erreur
+- [x] `[SETUP]` Ajouter `crossbeam = "0.8"` dans `[dependencies]` du crate
+- [x] `[SETUP]` Ajouter `libc = "0.2"` dans `[dependencies]`
+- [x] `[SETUP]` Ajouter `anyhow = "1.0"` dans `[dependencies]`
+- [x] `[SETUP]` Ajouter `tracing = "0.1"` et `tracing-subscriber = "0.3"` dans `[dependencies]`
+- [x] `[SETUP]` Configurer le `build.rs` : écrire les `println!("cargo:rustc-link-lib=framework=...")` pour `CoreAudio`, `AudioToolbox`, `Foundation`
+- [x] `[TEST-U]` **Test :** `cargo build -p audio_capture` — doit compiler et linker les frameworks Apple sans erreur
 
 ### P0.4 — Feature flags & mode standalone
 
-- [ ] `[SETUP]` Déclarer le feature flag `mock_audio` dans `[features]` du `Cargo.toml`
-- [ ] `[SETUP]` Déclarer le feature flag `standalone` pour activer un `main` de test intégré (via `[[bin]]` ou `examples/`)
-- [ ] `[TEST-U]` **Test :** `cargo build -p audio_capture --features mock_audio` — doit compiler
-- [ ] `[TEST-U]` **Test :** `cargo build -p audio_capture --features standalone` — doit compiler
+- [x] `[SETUP]` Déclarer le feature flag `mock_audio` dans `[features]` du `Cargo.toml`
+- [x] `[SETUP]` Déclarer le feature flag `standalone` pour activer un `main` de test intégré (via `[[bin]]` ou `examples/`)
+- [x] `[TEST-U]` **Test :** `cargo build -p audio_capture --features mock_audio` — doit compiler
+- [x] `[TEST-U]` **Test :** `cargo build -p audio_capture --features standalone` — doit compiler
 
 ---
 

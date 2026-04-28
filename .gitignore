@@ -1,1 +1,20 @@
 docs/
+
+# Rust build artifacts
+target/
+**/*.rs.bk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*.orig
+
+# Env
+.env

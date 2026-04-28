@@ -1,0 +1,3 @@
+[workspace]
+members = ["audio_capture"]
+resolver = "2"
