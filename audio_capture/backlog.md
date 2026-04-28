@@ -97,27 +97,27 @@
 
 ### P2.1 — Wrapper `AudioRingBuffer`
 
-- [ ] `[IMPL]` Créer `src/audio_capture/ring_buffer.rs`
-- [ ] `[IMPL]` Définir la struct `AudioRingBuffer` contenant un `Arc<ArrayQueue<f32>>`
-- [ ] `[IMPL]` Implémenter `AudioRingBuffer::new(capacity: usize) -> Self`
-- [ ] `[IMPL]` Implémenter `producer_handle(&self) -> Arc<ArrayQueue<f32>>` — retourne un clone de l'`Arc` pour le callback RT
-- [ ] `[IMPL]` Implémenter `consumer_handle(&self) -> Arc<ArrayQueue<f32>>` — retourne un clone de l'`Arc` pour le consommateur
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier que `new(32_000)` crée un buffer avec la bonne capacité
-- [ ] `[TEST-U]` **Test unitaire :** `producer_handle` et `consumer_handle` pointent vers la même `ArrayQueue` (vérification via `Arc::ptr_eq`)
+- [x] `[IMPL]` Créer `src/audio_capture/ring_buffer.rs`
+- [x] `[IMPL]` Définir la struct `AudioRingBuffer` contenant un `Arc<ArrayQueue<f32>>`
+- [x] `[IMPL]` Implémenter `AudioRingBuffer::new(capacity: usize) -> Self`
+- [x] `[IMPL]` Implémenter `producer_handle(&self) -> Arc<ArrayQueue<f32>>` — retourne un clone de l'`Arc` pour le callback RT
+- [x] `[IMPL]` Implémenter `consumer_handle(&self) -> Arc<ArrayQueue<f32>>` — retourne un clone de l'`Arc` pour le consommateur
+- [x] `[TEST-U]` **Test unitaire :** Vérifier que `new(32_000)` crée un buffer avec la bonne capacité
+- [x] `[TEST-U]` **Test unitaire :** `producer_handle` et `consumer_handle` pointent vers la même `ArrayQueue` (vérification via `Arc::ptr_eq`)
 
 ### P2.2 — Sémantique de production et consommation
 
-- [ ] `[IMPL]` Implémenter `push_sample(queue: &ArrayQueue<f32>, sample: f32)` — utilise `force_push` (écrase si plein, RT-safe)
-- [ ] `[IMPL]` Implémenter `drain_available(queue: &ArrayQueue<f32>) -> Vec<f32>` — draine tous les samples disponibles sans bloquer
-- [ ] `[IMPL]` Implémenter un compteur atomique `dropped_samples: AtomicUsize` pour tracer les overflows
-- [ ] `[TEST-U]` **Test unitaire :** Produire N samples, consommer N samples — vérifier l'ordre FIFO
-- [ ] `[TEST-U]` **Test unitaire :** Remplir le buffer au-delà de la capacité — vérifier que `dropped_samples` s'incrémente correctement
-- [ ] `[TEST-U]` **Test unitaire :** Consommer un buffer vide — vérifier que `drain_available` retourne un `Vec` vide sans bloquer
+- [x] `[IMPL]` Implémenter `push_sample(queue: &ArrayQueue<f32>, sample: f32)` — utilise `force_push` (écrase si plein, RT-safe)
+- [x] `[IMPL]` Implémenter `drain_available(queue: &ArrayQueue<f32>) -> Vec<f32>` — draine tous les samples disponibles sans bloquer
+- [x] `[IMPL]` Implémenter un compteur atomique `dropped_samples: AtomicUsize` pour tracer les overflows
+- [x] `[TEST-U]` **Test unitaire :** Produire N samples, consommer N samples — vérifier l'ordre FIFO
+- [x] `[TEST-U]` **Test unitaire :** Remplir le buffer au-delà de la capacité — vérifier que `dropped_samples` s'incrémente correctement
+- [x] `[TEST-U]` **Test unitaire :** Consommer un buffer vide — vérifier que `drain_available` retourne un `Vec` vide sans bloquer
 
 ### P2.3 — Thread-safety du ring buffer
 
-- [ ] `[TEST-I]` **Test d'intégration :** Lancer un thread producteur (1 million de push à 16 kHz simulé) et un thread consommateur en parallèle — vérifier zéro data race (avec `cargo test` sous ThreadSanitizer si disponible)
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier que `AudioRingBuffer` implémente `Send` et `Sync`
+- [x] `[TEST-I]` **Test d'intégration :** Lancer un thread producteur (1 million de push à 16 kHz simulé) et un thread consommateur en parallèle — vérifier zéro data race (avec `cargo test` sous ThreadSanitizer si disponible)
+- [x] `[TEST-U]` **Test unitaire :** Vérifier que `AudioRingBuffer` implémente `Send` et `Sync`
 - [ ] `[TEST-P]` **Benchmark :** Mesurer le throughput du ring buffer (push + pop) — doit supporter > 100 000 opérations/s sans dégradation
 
 ---
