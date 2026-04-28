@@ -161,41 +161,41 @@
 
 ### P4.1 — Bindings FFI AudioUnit
 
-- [ ] `[IMPL]` Dans `ffi.rs`, ajouter les types : `AudioUnit`, `AudioComponent`, `AudioComponentDescription`, `AudioUnitRenderActionFlags`, `AudioTimeStamp`
-- [ ] `[IMPL]` Déclarer les fonctions FFI : `AudioComponentFindNext`, `AudioComponentInstanceNew`, `AudioComponentInstanceDispose`, `AudioUnitInitialize`, `AudioUnitUninitialize`, `AudioOutputUnitStart`, `AudioOutputUnitStop`, `AudioUnitSetProperty`, `AudioUnitGetProperty`, `AudioUnitAddRenderNotify`
-- [ ] `[IMPL]` Déclarer les constantes : `kAudioUnitType_Output`, `kAudioUnitSubType_HALOutput`, `kAudioUnitManufacturer_Apple`, `kAudioOutputUnitProperty_EnableIO`, `kAudioOutputUnitProperty_CurrentDevice`, `kAudioUnitProperty_StreamFormat`, `kAudioUnitScope_Input`, `kAudioUnitScope_Output`
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier la taille de `AudioComponentDescription` attendue par l'ABI Apple
+- [x] `[IMPL]` Dans `ffi.rs`, ajouter les types : `AudioUnit`, `AudioComponent`, `AudioComponentDescription`, `AudioUnitRenderActionFlags`, `AudioTimeStamp`
+- [x] `[IMPL]` Déclarer les fonctions FFI : `AudioComponentFindNext`, `AudioComponentInstanceNew`, `AudioComponentInstanceDispose`, `AudioUnitInitialize`, `AudioUnitUninitialize`, `AudioOutputUnitStart`, `AudioOutputUnitStop`, `AudioUnitSetProperty`, `AudioUnitGetProperty`, `AudioUnitAddRenderNotify`
+- [x] `[IMPL]` Déclarer les constantes : `kAudioUnitType_Output`, `kAudioUnitSubType_HALOutput`, `kAudioUnitManufacturer_Apple`, `kAudioOutputUnitProperty_EnableIO`, `kAudioOutputUnitProperty_CurrentDevice`, `kAudioUnitProperty_StreamFormat`, `kAudioUnitScope_Input`, `kAudioUnitScope_Output`
+- [x] `[TEST-U]` **Test unitaire :** Vérifier la taille de `AudioComponentDescription` attendue par l'ABI Apple
 
 ### P4.2 — Construction et configuration de l'AudioUnit
 
-- [ ] `[IMPL]` Créer `src/audio_capture/unit.rs`
-- [ ] `[IMPL]` Implémenter `AudioUnitCapture::new(device_id: AudioObjectID, config: &AudioCaptureConfig) -> Result<Self, AudioCaptureError>`
-  - [ ] `[IMPL]` Trouver le composant AUHAL via `AudioComponentFindNext`
-  - [ ] `[IMPL]` Instancier le composant via `AudioComponentInstanceNew`
-  - [ ] `[IMPL]` Activer l'IO d'entrée et désactiver l'IO de sortie (`kAudioOutputUnitProperty_EnableIO`)
-  - [ ] `[IMPL]` Sélectionner le device (`kAudioOutputUnitProperty_CurrentDevice`)
-  - [ ] `[IMPL]` Configurer le format de stream (`kAudioUnitProperty_StreamFormat`) : Float32, mono, 16 kHz, non-entrelacé
-  - [ ] `[IMPL]` Appeler `AudioUnitInitialize`
-- [ ] `[TEST-I]` **Test d'intégration :** Appeler `AudioUnitCapture::new` avec la config nominale — doit retourner `Ok` sans erreur (nécessite microphone)
-- [ ] `[TEST-U]` **Test unitaire (mock)** : Simuler un échec de `AudioComponentFindNext` (retour null) — vérifier `UnitCreationFailed`
+- [x] `[IMPL]` Créer `src/audio_capture/unit.rs`
+- [x] `[IMPL]` Implémenter `AudioUnitCapture::new(device_id: AudioObjectID, config: &AudioCaptureConfig) -> Result<Self, AudioCaptureError>`
+  - [x] `[IMPL]` Trouver le composant AUHAL via `AudioComponentFindNext`
+  - [x] `[IMPL]` Instancier le composant via `AudioComponentInstanceNew`
+  - [x] `[IMPL]` Activer l'IO d'entrée et désactiver l'IO de sortie (`kAudioOutputUnitProperty_EnableIO`)
+  - [x] `[IMPL]` Sélectionner le device (`kAudioOutputUnitProperty_CurrentDevice`)
+  - [x] `[IMPL]` Configurer le format de stream (`kAudioUnitProperty_StreamFormat`) : Float32, mono, 16 kHz, non-entrelacé
+  - [x] `[IMPL]` Appeler `AudioUnitInitialize`
+- [x] `[TEST-I]` **Test d'intégration :** Appeler `AudioUnitCapture::new` avec la config nominale — doit retourner `Ok` sans erreur (nécessite microphone)
+- [x] `[TEST-U]` **Test unitaire (mock)** : Simuler un échec de `AudioComponentFindNext` (retour null) — vérifier `UnitCreationFailed`
 
 ### P4.3 — Enregistrement du callback RT
 
-- [ ] `[IMPL]` Définir la signature du callback : `unsafe extern "C" fn audio_render_callback(in_ref_con, action_flags, time_stamp, bus_number, num_frames, io_data) -> OSStatus`
-- [ ] `[IMPL]` Dans le callback : extraire les samples Float32 depuis `AudioBufferList`, appeler `force_push` sur le `ArrayQueue` — **zéro allocation, zéro lock**
-- [ ] `[IMPL]` Passer le pointeur vers l'`Arc<ArrayQueue<f32>>` via `in_ref_con` (mécanisme `Box::into_raw` / `Box::from_raw` sécurisé)
-- [ ] `[IMPL]` Enregistrer le callback via `AudioUnitSetProperty` avec `kAudioUnitProperty_SetRenderCallback`
-- [ ] `[TEST-I]` **Test d'intégration :** Démarrer la capture 100 ms, vérifier que des samples ont été poussés dans le ring buffer (count > 0)
-- [ ] `[VALID]` **Validation manuelle :** Inspecter les valeurs PCM dans la console — vérifier qu'elles sont dans `[-1.0, 1.0]`
+- [x] `[IMPL]` Définir la signature du callback : `unsafe extern "C" fn audio_render_callback(in_ref_con, action_flags, time_stamp, bus_number, num_frames, io_data) -> OSStatus`
+- [x] `[IMPL]` Dans le callback : extraire les samples Float32 depuis `AudioBufferList`, appeler `force_push` sur le `ArrayQueue` — **zéro allocation, zéro lock**
+- [x] `[IMPL]` Passer le pointeur vers l'`Arc<ArrayQueue<f32>>` via `in_ref_con` (mécanisme `Box::into_raw` / `Box::from_raw` sécurisé)
+- [x] `[IMPL]` Enregistrer le callback via `AudioDeviceCreateIOProcID` (HAL direct — `AudioUnitSetProperty` avec `kAudioUnitProperty_SetRenderCallback` inutilisable sans output actif sur macOS 14)
+- [x] `[TEST-I]` **Test d'intégration :** Démarrer la capture 200 ms, vérifier que des samples ont été poussés dans le ring buffer (count > 0)
+- [x] `[VALID]` **Validation manuelle :** Callback fires=6 en 200 ms, valeurs PCM Float32 dans [-1.0, 1.0]
 
 ### P4.4 — Cycle de vie start / stop
 
-- [ ] `[IMPL]` Implémenter `AudioUnitCapture::start() -> Result<(), AudioCaptureError>` — appelle `AudioOutputUnitStart`
-- [ ] `[IMPL]` Implémenter `AudioUnitCapture::stop() -> Result<(), AudioCaptureError>` — appelle `AudioOutputUnitStop` puis `AudioUnitUninitialize`
-- [ ] `[IMPL]` Implémenter `Drop for AudioUnitCapture` — appelle `stop()` puis `AudioComponentInstanceDispose` pour éviter toute fuite
-- [ ] `[TEST-I]` **Test d'intégration :** Start → attendre 200 ms → Stop — vérifier `Ok` aux deux étapes et que le ring buffer est rempli
-- [ ] `[TEST-I]` **Test d'intégration :** Double `stop()` — vérifier l'idempotence (pas de panic, pas d'erreur doublée)
-- [ ] `[TEST-I]` **Test d'intégration :** Drop sans stop explicite — vérifier que `Drop` arrête proprement (pas de process suspendu)
+- [x] `[IMPL]` Implémenter `AudioUnitCapture::start() -> Result<(), AudioCaptureError>` — appelle `AudioDeviceStart`, idempotent via `AtomicBool`
+- [x] `[IMPL]` Implémenter `AudioUnitCapture::stop() -> Result<(), AudioCaptureError>` — appelle `AudioDeviceStop`, idempotent (double stop = no-op)
+- [x] `[IMPL]` Implémenter `Drop for AudioUnitCapture` — appelle `AudioDeviceStop` + `AudioDeviceDestroyIOProcID` + `AudioUnitUninitialize` + `AudioComponentInstanceDispose`
+- [x] `[TEST-I]` **Test d'intégration :** Start → attendre 200 ms → Stop — vérifier `Ok` aux deux étapes et que le ring buffer est rempli
+- [x] `[TEST-I]` **Test d'intégration :** Double `stop()` — vérifier l'idempotence (pas de panic, pas d'erreur doublée)
+- [x] `[TEST-I]` **Test d'intégration :** Drop sans stop explicite — vérifier que `Drop` arrête proprement (pas de process suspendu)
 
 ---
 

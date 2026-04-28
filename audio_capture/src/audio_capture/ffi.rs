@@ -111,8 +111,203 @@ pub const kAudioFormatFlagIsNonInterleaved: u32 = 1 << 5;
 pub const noErr: OSStatus = 0;
 
 // ---------------------------------------------------------------------------
-// Fonctions FFI extern "C"
+// Types AudioUnit / AudioComponent
 // ---------------------------------------------------------------------------
+
+/// Instance opaque d'un AudioUnit (pointeur C, nullable).
+pub type AudioUnit = *mut c_void;
+
+/// Référence opaque vers un AudioComponent.
+pub type AudioComponent = *mut c_void;
+
+/// Description permettant de rechercher un composant audio.
+#[repr(C)]
+pub struct AudioComponentDescription {
+    pub componentType: u32,
+    pub componentSubType: u32,
+    pub componentManufacturer: u32,
+    pub componentFlags: u32,
+    pub componentFlagsMask: u32,
+}
+
+/// Flags d'action passés au callback de rendu.
+pub type AudioUnitRenderActionFlags = u32;
+
+/// Timestamp CoreAudio (seul `mSampleTime` nous est utile ; les autres
+/// champs sont réservés ou liés à l'horloge hôte).
+#[repr(C)]
+pub struct AudioTimeStamp {
+    pub mSampleTime: f64,
+    pub mHostTime: u64,
+    pub mRateScalar: f64,
+    pub mWordClockTime: u64,
+    /// SMPTETime (80 octets) — padding pour respecter l'ABI Apple.
+    pub mSMPTETime: [u8; 24],
+    pub mFlags: u32,
+    pub mReserved: u32,
+}
+
+/// Callback de rendu enregistré sur l'AudioUnit d'entrée.
+#[repr(C)]
+pub struct AURenderCallbackStruct {
+    pub inputProc: Option<
+        unsafe extern "C" fn(
+            inRefCon: *mut c_void,
+            ioActionFlags: *mut AudioUnitRenderActionFlags,
+            inTimeStamp: *const AudioTimeStamp,
+            inBusNumber: u32,
+            inNumberFrames: u32,
+            ioData: *mut AudioBufferList,
+        ) -> OSStatus,
+    >,
+    pub inputProcRefCon: *mut c_void,
+}
+
+// ---------------------------------------------------------------------------
+// Constantes AudioUnit / AudioComponent
+// ---------------------------------------------------------------------------
+
+/// Type : Output AudioUnit (AUHAL pour capture).
+pub const kAudioUnitType_Output: u32 = 0x61756F75; // 'auou'
+
+/// Sous-type : HAL Output (accès direct au hardware).
+pub const kAudioUnitSubType_HALOutput: u32 = 0x6168616C; // 'ahal'
+
+/// Fabricant Apple.
+pub const kAudioUnitManufacturer_Apple: u32 = 0x6170706C; // 'appl'
+
+/// Propriété : activer/désactiver l'IO d'entrée ou de sortie.
+pub const kAudioOutputUnitProperty_EnableIO: u32 = 2003;
+
+/// Propriété : sélectionner le device CoreAudio à utiliser.
+pub const kAudioOutputUnitProperty_CurrentDevice: u32 = 2000;
+
+/// Propriété : format du stream (ASBD) sur un bus donné.
+pub const kAudioUnitProperty_StreamFormat: u32 = 8;
+
+/// Propriété : callback de rendu/capture.
+pub const kAudioUnitProperty_SetRenderCallback: u32 = 23;
+
+/// Scope : entrée.
+pub const kAudioUnitScope_Input: u32 = 1;
+
+/// Scope : sortie.
+pub const kAudioUnitScope_Output: u32 = 2;
+
+/// Scope : global (propriétés non directionnelles de l'AudioUnit).
+pub const kAudioUnitScope_Global: u32 = 0;
+
+/// Propriété : callback d'entrée pour l'AudioUnit AUHAL (capture micro).
+pub const kAudioOutputUnitProperty_SetInputCallback: u32 = 2005;
+
+// ---------------------------------------------------------------------------
+// Fonctions FFI AudioComponent / AudioUnit
+// ---------------------------------------------------------------------------
+
+extern "C" {
+    /// Cherche un composant audio correspondant à la description.
+    pub fn AudioComponentFindNext(
+        inComponent: AudioComponent,
+        inDesc: *const AudioComponentDescription,
+    ) -> AudioComponent;
+
+    /// Instancie un AudioUnit à partir d'un AudioComponent.
+    pub fn AudioComponentInstanceNew(
+        inComponent: AudioComponent,
+        outInstance: *mut AudioUnit,
+    ) -> OSStatus;
+
+    /// Libère une instance d'AudioUnit.
+    pub fn AudioComponentInstanceDispose(inInstance: AudioUnit) -> OSStatus;
+
+    /// Initialise l'AudioUnit (alloue les ressources DSP).
+    pub fn AudioUnitInitialize(inUnit: AudioUnit) -> OSStatus;
+
+    /// Libère les ressources DSP de l'AudioUnit.
+    pub fn AudioUnitUninitialize(inUnit: AudioUnit) -> OSStatus;
+
+    /// Démarre le flux audio (start du callback RT).
+    pub fn AudioOutputUnitStart(ci: AudioUnit) -> OSStatus;
+
+    /// Arrête le flux audio.
+    pub fn AudioOutputUnitStop(ci: AudioUnit) -> OSStatus;
+
+    /// Configure une propriété sur l'AudioUnit.
+    pub fn AudioUnitSetProperty(
+        inUnit: AudioUnit,
+        inID: u32,
+        inScope: u32,
+        inElement: u32,
+        inData: *const c_void,
+        inDataSize: u32,
+    ) -> OSStatus;
+
+    /// Lit une propriété de l'AudioUnit.
+    pub fn AudioUnitGetProperty(
+        inUnit: AudioUnit,
+        inID: u32,
+        inScope: u32,
+        inElement: u32,
+        outData: *mut c_void,
+        ioDataSize: *mut u32,
+    ) -> OSStatus;
+
+    /// Rend (tire) des données audio depuis l'AudioUnit — utilisé dans le callback
+    /// d'entrée pour récupérer les échantillons PCM depuis le hardware.
+    pub fn AudioUnitRender(
+        inUnit: AudioUnit,
+        ioActionFlags: *mut AudioUnitRenderActionFlags,
+        inTimeStamp: *const AudioTimeStamp,
+        inOutputBusNumber: u32,
+        inNumberFrames: u32,
+        ioData: *mut AudioBufferList,
+    ) -> OSStatus;
+}
+
+// ---------------------------------------------------------------------------
+// API CoreAudio HAL directe (AudioDeviceIOProc)
+// Plus simple pour la capture entrée seule : données livrées directement
+// dans le callback sans passer par le mécanisme de rendu AUHAL.
+// ---------------------------------------------------------------------------
+
+/// Identifiant opaque d'un IOProc enregistré sur un device CoreAudio.
+pub type AudioDeviceIOProcID = *mut c_void;
+
+extern "C" {
+    /// Enregistre un callback IO sur un device CoreAudio.
+    pub fn AudioDeviceCreateIOProcID(
+        inDevice: AudioObjectID,
+        inProc: unsafe extern "C" fn(
+            AudioObjectID,
+            *const AudioTimeStamp,
+            *const AudioBufferList,
+            *const AudioTimeStamp,
+            *mut AudioBufferList,
+            *const AudioTimeStamp,
+            *mut c_void,
+        ) -> OSStatus,
+        inClientData: *mut c_void,
+        outIOProcID: *mut AudioDeviceIOProcID,
+    ) -> OSStatus;
+
+    /// Détruit un IOProc enregistré sur un device CoreAudio.
+    pub fn AudioDeviceDestroyIOProcID(
+        inDevice: AudioObjectID,
+        inIOProcID: AudioDeviceIOProcID,
+    ) -> OSStatus;
+
+    /// Démarre le device (active le callback).
+    pub fn AudioDeviceStart(
+        inDevice: AudioObjectID,
+        inProcID: AudioDeviceIOProcID,
+    ) -> OSStatus;
+
+    /// Arrête le device (désactive le callback).
+    pub fn AudioDeviceStop(
+        inDevice: AudioObjectID,
+        inProcID: AudioDeviceIOProcID,
+    ) -> OSStatus;
+}
 
 extern "C" {
     /// Lit la valeur d'une propriété d'un objet audio.
@@ -175,5 +370,11 @@ mod tests {
     fn taille_audio_buffer() {
         // 2 × u32 (8) + *mut c_void (8 sur 64-bit) = 16 octets
         assert_eq!(size_of::<AudioBuffer>(), 16);
+    }
+
+    #[test]
+    fn taille_audio_component_description() {
+        // 5 × u32 = 20 octets
+        assert_eq!(size_of::<AudioComponentDescription>(), 20);
     }
 }

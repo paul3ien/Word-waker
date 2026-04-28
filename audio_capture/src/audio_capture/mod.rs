@@ -3,3 +3,4 @@ pub mod device;
 pub mod error;
 pub mod ffi;
 pub mod ring_buffer;
+pub mod unit;
