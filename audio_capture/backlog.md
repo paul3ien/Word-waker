@@ -70,22 +70,22 @@
 
 ### P1.1 — Définition du type d'erreur du module
 
-- [ ] `[IMPL]` Créer `src/audio_capture/error.rs`
-- [ ] `[IMPL]` Définir l'enum `AudioCaptureError` avec les variantes : `DeviceNotFound`, `FormatUnsupported`, `UnitCreationFailed(i32)`, `UnitStartFailed(i32)`, `UnitStopFailed(i32)`, `PropertySetFailed(i32)`, `RingBufferFull`
-- [ ] `[IMPL]` Implémenter `std::fmt::Display` pour `AudioCaptureError`
-- [ ] `[IMPL]` Implémenter `std::error::Error` pour `AudioCaptureError`
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier que chaque variante produit un message `Display` non vide
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier que `AudioCaptureError` est `Send + Sync`
+- [x] `[IMPL]` Créer `src/audio_capture/error.rs`
+- [x] `[IMPL]` Définir l'enum `AudioCaptureError` avec les variantes : `DeviceNotFound`, `FormatUnsupported`, `UnitCreationFailed(i32)`, `UnitStartFailed(i32)`, `UnitStopFailed(i32)`, `PropertySetFailed(i32)`, `RingBufferFull`
+- [x] `[IMPL]` Implémenter `std::fmt::Display` pour `AudioCaptureError`
+- [x] `[IMPL]` Implémenter `std::error::Error` pour `AudioCaptureError`
+- [x] `[TEST-U]` **Test unitaire :** Vérifier que chaque variante produit un message `Display` non vide
+- [x] `[TEST-U]` **Test unitaire :** Vérifier que `AudioCaptureError` est `Send + Sync`
 
 ### P1.2 — Définition de la configuration
 
-- [ ] `[IMPL]` Créer `src/audio_capture/config.rs`
-- [ ] `[IMPL]` Définir la struct `AudioCaptureConfig` avec les champs : `sample_rate: f64`, `buffer_size_frames: u32`, `ring_capacity: usize`
-- [ ] `[IMPL]` Implémenter `Default` pour `AudioCaptureConfig` avec les valeurs nominales (16000 Hz, 256 frames, 32000 samples)
-- [ ] `[IMPL]` Implémenter une méthode `validate(&self) -> Result<(), AudioCaptureError>` qui vérifie les invariants (sample_rate > 0, buffer_size_frames puissance de 2, etc.)
-- [ ] `[TEST-U]` **Test unitaire :** `AudioCaptureConfig::default()` — vérifier que `validate()` retourne `Ok`
-- [ ] `[TEST-U]` **Test unitaire :** Config avec `sample_rate = 0` — vérifier que `validate()` retourne `Err`
-- [ ] `[TEST-U]` **Test unitaire :** Config avec `buffer_size_frames` non puissance de 2 — vérifier le rejet
+- [x] `[IMPL]` Créer `src/audio_capture/config.rs`
+- [x] `[IMPL]` Définir la struct `AudioCaptureConfig` avec les champs : `sample_rate: f64`, `buffer_size_frames: u32`, `ring_capacity: usize`
+- [x] `[IMPL]` Implémenter `Default` pour `AudioCaptureConfig` avec les valeurs nominales (16000 Hz, 256 frames, 32000 samples)
+- [x] `[IMPL]` Implémenter une méthode `validate(&self) -> Result<(), AudioCaptureError>` qui vérifie les invariants (sample_rate > 0, buffer_size_frames puissance de 2, etc.)
+- [x] `[TEST-U]` **Test unitaire :** `AudioCaptureConfig::default()` — vérifier que `validate()` retourne `Ok`
+- [x] `[TEST-U]` **Test unitaire :** Config avec `sample_rate = 0` — vérifier que `validate()` retourne `Err`
+- [x] `[TEST-U]` **Test unitaire :** Config avec `buffer_size_frames` non puissance de 2 — vérifier le rejet
 
 ---
 
