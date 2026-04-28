@@ -235,21 +235,21 @@
 
 ### P6.1 — Struct `AudioCapture` (façade)
 
-- [ ] `[IMPL]` Créer `src/audio_capture/mod.rs` (ou `lib.rs` si crate autonome)
-- [ ] `[IMPL]` Définir la struct `AudioCapture` qui agrège `AudioUnitCapture` et `AudioConsumer`
-- [ ] `[IMPL]` Implémenter `AudioCapture::new(config: AudioCaptureConfig) -> Result<Self, AudioCaptureError>` — appelle `get_default_input_device`, `AudioUnitCapture::new`, `AudioRingBuffer::new`, `AudioConsumer::new`
-- [ ] `[IMPL]` Implémenter `AudioCapture::start(sender: Sender<Vec<f32>>) -> Result<(), AudioCaptureError>` — démarre l'AudioUnit et le consommateur
-- [ ] `[IMPL]` Implémenter `AudioCapture::stop() -> Result<(), AudioCaptureError>` — arrête dans l'ordre : consommateur puis AudioUnit
-- [ ] `[IMPL]` Implémenter `Drop for AudioCapture` — appelle `stop()` silencieusement
-- [ ] `[TEST-I]` **Test d'intégration :** Cycle complet `new → start → 1s capture → stop` — vérifier que des samples valides ont été reçus
-- [ ] `[TEST-I]` **Test d'intégration :** Deux cycles successifs `start/stop` — vérifier l'idempotence de la réinitialisation
+- [x] `[IMPL]` Créer `src/audio_capture/facade.rs`
+- [x] `[IMPL]` Définir la struct `AudioCapture` qui agrège `AudioUnitCapture`, `AudioRingBuffer` et `AudioConsumer`
+- [x] `[IMPL]` Implémenter `AudioCapture::new(config: AudioCaptureConfig) -> Result<Self, AudioCaptureError>` — appelle `get_default_input_device`, `AudioUnitCapture::new`, `AudioRingBuffer::new`, `AudioConsumer::new`
+- [x] `[IMPL]` Implémenter `AudioCapture::start(sender: Sender<Vec<f32>>) -> Result<(), AudioCaptureError>` — démarre l'AudioUnit et le consommateur
+- [x] `[IMPL]` Implémenter `AudioCapture::stop() -> Result<(), AudioCaptureError>` — arrête dans l'ordre : consommateur puis AudioUnit
+- [x] `[IMPL]` Implémenter `Drop for AudioCapture` — appelle `stop()` silencieusement
+- [x] `[TEST-I]` **Test d'intégration :** Cycle complet `new → start → 1s capture → stop` — vérifier que des samples valides ont été reçus
+- [x] `[TEST-I]` **Test d'intégration :** Deux cycles successifs `start/stop` — vérifier l'idempotence de la réinitialisation
 
 ### P6.2 — Mode standalone (exécution sans pipeline)
 
-- [ ] `[IMPL]` Créer `examples/standalone_capture.rs` (activé par feature `standalone`)
-- [ ] `[IMPL]` Le binaire d'exemple : initialise le module, capture 3 secondes, affiche les statistiques (nombre de samples reçus, drop rate), puis s'arrête proprement
-- [ ] `[TEST-I]` **Test d'intégration :** `cargo run --example standalone_capture --features standalone` — doit s'exécuter sans erreur et afficher des statistiques cohérentes
-- [ ] `[VALID]` **Validation manuelle :** Parler dans le micro pendant l'exemple, vérifier visuellement que les amplitudes varient
+- [x] `[IMPL]` Créer `examples/standalone_capture.rs` (activé par feature `standalone`)
+- [x] `[IMPL]` Le binaire d'exemple : initialise le module, capture 3 secondes, affiche les statistiques (nombre de samples reçus, drop rate), puis s'arrête proprement
+- [x] `[TEST-I]` **Test d'intégration :** `cargo run --example standalone_capture --features standalone` — doit s'exécuter sans erreur et afficher des statistiques cohérentes
+- [x] `[VALID]` **Validation manuelle :** Parler dans le micro pendant l'exemple, vérifier visuellement que les amplitudes varient
 
 ---
 

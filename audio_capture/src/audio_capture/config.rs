@@ -1,6 +1,7 @@
 use crate::audio_capture::error::AudioCaptureError;
 
 /// Paramètres de configuration du module de capture audio.
+#[derive(Clone)]
 pub struct AudioCaptureConfig {
     /// Fréquence d'échantillonnage en Hz (nominale : 16 000 Hz).
     pub sample_rate: f64,
