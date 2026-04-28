@@ -207,23 +207,23 @@
 
 ### P5.1 — Structure du consommateur
 
-- [ ] `[IMPL]` Créer `src/audio_capture/consumer.rs`
-- [ ] `[IMPL]` Définir la struct `AudioConsumer` avec : `queue: Arc<ArrayQueue<f32>>`, `poll_interval_ms: u64`, `running: Arc<AtomicBool>`, `thread_handle: Option<JoinHandle<()>>`
-- [ ] `[IMPL]` Implémenter `AudioConsumer::new(queue: Arc<ArrayQueue<f32>>, poll_interval_ms: u64) -> Self`
+- [x] `[IMPL]` Créer `src/audio_capture/consumer.rs`
+- [x] `[IMPL]` Définir la struct `AudioConsumer` avec : `queue: Arc<ArrayQueue<f32>>`, `poll_interval_ms: u64`, `running: Arc<AtomicBool>`, `thread_handle: Option<JoinHandle<()>>`
+- [x] `[IMPL]` Implémenter `AudioConsumer::new(queue: Arc<ArrayQueue<f32>>, poll_interval_ms: u64) -> Self`
 
 ### P5.2 — Boucle de consommation
 
-- [ ] `[IMPL]` Implémenter `AudioConsumer::start(sender: Sender<Vec<f32>>) -> Result<(), AudioCaptureError>` — spawn d'un thread qui drain le ring buffer toutes les `poll_interval_ms` ms et envoie les batches via le `Sender`
-- [ ] `[IMPL]` Utiliser `std::thread::sleep(Duration::from_millis(poll_interval_ms))` dans la boucle
-- [ ] `[IMPL]` Vérifier `running.load(Ordering::Relaxed)` à chaque itération pour sortir proprement
-- [ ] `[IMPL]` Implémenter `AudioConsumer::stop()` — pose `running` à `false` et `join` le thread
+- [x] `[IMPL]` Implémenter `AudioConsumer::start(sender: Sender<Vec<f32>>) -> Result<(), AudioCaptureError>` — spawn d'un thread qui drain le ring buffer toutes les `poll_interval_ms` ms et envoie les batches via le `Sender`
+- [x] `[IMPL]` Utiliser `std::thread::sleep(Duration::from_millis(poll_interval_ms))` dans la boucle
+- [x] `[IMPL]` Vérifier `running.load(Ordering::Relaxed)` à chaque itération pour sortir proprement
+- [x] `[IMPL]` Implémenter `AudioConsumer::stop()` — pose `running` à `false` et `join` le thread
 
 ### P5.3 — Tests du consommateur
 
-- [ ] `[TEST-U]` **Test unitaire :** Pré-remplir le ring buffer avec des samples connus, lancer le consommateur, vérifier que le `Receiver` reçoit les mêmes valeurs
-- [ ] `[TEST-U]` **Test unitaire :** Lancer le consommateur sur un ring buffer vide — vérifier qu'il ne bloque pas et n'envoie pas de batch vide
-- [ ] `[TEST-I]` **Test d'intégration :** Consommateur branché sur le vrai module de capture (capture 500 ms) — vérifier que tous les batches reçus sont non vides et dans `[-1.0, 1.0]`
-- [ ] `[TEST-I]` **Test d'intégration :** Stop du consommateur pendant la capture — vérifier que le thread se termine proprement sans panic
+- [x] `[TEST-U]` **Test unitaire :** Pré-remplir le ring buffer avec des samples connus, lancer le consommateur, vérifier que le `Receiver` reçoit les mêmes valeurs
+- [x] `[TEST-U]` **Test unitaire :** Lancer le consommateur sur un ring buffer vide — vérifier qu'il ne bloque pas et n'envoie pas de batch vide
+- [x] `[TEST-I]` **Test d'intégration :** Consommateur branché sur le vrai module de capture (capture 500 ms) — vérifier que tous les batches reçus sont non vides et dans `[-1.0, 1.0]`
+- [x] `[TEST-I]` **Test d'intégration :** Stop du consommateur pendant la capture — vérifier que le thread se termine proprement sans panic
 
 ---
 
