@@ -344,40 +344,40 @@
 
 ### P11.1 — Organisation des tests
 
-- [ ] `[SETUP]` Créer `tests/pipeline_dsp_integration.rs` — tests d'intégration du crate complet
-- [ ] `[SETUP]` Créer `benches/dsp_bench.rs` — benchmarks par étape et de bout en bout
-- [ ] `[SETUP]` Ajouter `fixtures/reference_mfcc.json` dans le dépôt (généré par le script Python P0.3)
-- [ ] `[SETUP]` Séparer les tests nécessitant le fichier de référence avec `#[cfg(not(feature = "skip_fixtures"))]`
+- [x] `[SETUP]` Créer `tests/pipeline_dsp_integration.rs` — tests d'intégration du crate complet
+- [x] `[SETUP]` Créer `benches/dsp_bench.rs` — benchmarks par étape et de bout en bout
+- [x] `[SETUP]` Ajouter `fixtures/reference_mfcc.json` dans le dépôt (généré par le script Python P0.3)
+- [x] `[SETUP]` Séparer les tests nécessitant le fichier de référence avec `#[cfg(not(feature = "skip_fixtures"))]`
 
 ### P11.2 — Tests unitaires de régression
 
-- [ ] `[TEST-U]` **Régression :** `DspConfig::default().validate()` → Ok
-- [ ] `[TEST-U]` **Régression :** `hz_to_mel` / `mel_to_hz` — bijection sur 10 valeurs tabulées
-- [ ] `[TEST-U]` **Régression :** Fenêtre Hann 400 — premier et dernier coefficients sont 0.0
-- [ ] `[TEST-U]` **Régression :** FFT signal silence → magnitudes nulles
-- [ ] `[TEST-U]` **Régression :** FFT signal sinusoïdal → pic à la bonne bin
-- [ ] `[TEST-U]` **Régression :** Log-énergies avec valeur nulle → pas de panique
-- [ ] `[TEST-U]` **Régression :** Accumulateur — `is_ready` après 98 trames exactement
-- [ ] `[TEST-U]` **Régression :** Tailles des FFI structs (`DSPSplitComplex`)
+- [x] `[TEST-U]` **Régression :** `DspConfig::default().validate()` → Ok
+- [x] `[TEST-U]` **Régression :** `hz_to_mel` / `mel_to_hz` — bijection sur 10 valeurs tabulées
+- [x] `[TEST-U]` **Régression :** Fenêtre Hann 400 — premier et dernier coefficients sont 0.0
+- [x] `[TEST-U]` **Régression :** FFT signal silence → magnitudes nulles
+- [x] `[TEST-U]` **Régression :** FFT signal sinusoïdal → pic à la bonne bin
+- [x] `[TEST-U]` **Régression :** Log-énergies avec valeur nulle → pas de panique
+- [x] `[TEST-U]` **Régression :** Accumulateur — `is_ready` après 98 trames exactement
+- [x] `[TEST-U]` **Régression :** Tailles des FFI structs (`DSPSplitComplex`)
 
 ### P11.3 — Tests de validation numérique de régression
 
-- [ ] `[TEST-N]` **Régression numérique :** Pré-accentuation vs librosa — erreur < 1e-5
-- [ ] `[TEST-N]` **Régression numérique :** Fenêtre Hann vs numpy — erreur < 1e-6
-- [ ] `[TEST-N]` **Régression numérique :** Magnitudes FFT vs numpy — erreur relative < 1e-3
-- [ ] `[TEST-N]` **Régression numérique :** Matrice Mel vs librosa — erreur < 1e-4
-- [ ] `[TEST-N]` **Régression numérique :** MFCC bout en bout vs `fixtures/reference_mfcc.json` — erreur < 1e-2
+- [x] `[TEST-N]` **Régression numérique :** Pré-accentuation vs librosa — erreur < 1e-5
+- [x] `[TEST-N]` **Régression numérique :** Fenêtre Hann vs numpy — erreur < 1e-6
+- [x] `[TEST-N]` **Régression numérique :** Magnitudes FFT vs numpy — erreur relative < 1e-3
+- [x] `[TEST-N]` **Régression numérique :** Matrice Mel vs librosa — erreur < 1e-4
+- [x] `[TEST-N]` **Régression numérique :** MFCC bout en bout vs `fixtures/reference_mfcc.json` — erreur < 1e-2
 
 ### P11.4 — Tests d'intégration de régression
 
-- [ ] `[TEST-I]` **Régression :** Cycle `new → process_batch (3s) → stop` — aucune panique, aucune fuite
-- [ ] `[TEST-I]` **Régression :** Deux instances simultanées — setups FFT/DCT distincts, résultats identiques
-- [ ] `[TEST-I]` **Régression :** Thread runner → 10 matrices MFCC reçues en moins de 500 ms (signal synthétique)
+- [x] `[TEST-I]` **Régression :** Cycle `new → process_batch (3s) → stop` — aucune panique, aucune fuite
+- [x] `[TEST-I]` **Régression :** Deux instances simultanées — setups FFT/DCT distincts, résultats identiques
+- [x] `[TEST-I]` **Régression :** Thread runner → 10 matrices MFCC reçues en moins de 500 ms (signal synthétique)
 
 ### P11.5 — Tests de performance
 
-- [ ] `[TEST-P]` **Benchmark :** Latence de `FrameProcessor::process_frame` sur 1 trame — doit être < 0.5 ms
-- [ ] `[TEST-P]` **Benchmark :** Throughput du pipeline complet (98 trames) — doit être < 5 ms pour 1 seconde d'audio
+- [x] `[TEST-P]` **Benchmark :** Latence de `FrameProcessor::process_frame` sur 1 trame — doit être < 0.5 ms
+- [x] `[TEST-P]` **Benchmark :** Throughput du pipeline complet (98 trames) — doit être < 5 ms pour 1 seconde d'audio
 - [ ] `[VALID]` **Validation AddressSanitizer :** `RUSTFLAGS="-Z sanitizer=address" cargo +nightly test -p pipeline_dsp` — zéro erreur mémoire, zéro fuite sur les setups `c_void`
 - [ ] `[VALID]` **Validation CPU Instruments :** Pipeline en boucle continue pendant 60 s — CPU < 0,1 %
 
