@@ -144,43 +144,43 @@
 
 ### P4.1 — Squelette et includes
 
-- [ ] `[IMPL-MM]` Ajouter les imports : `#import <CoreML/CoreML.h>`, `#include <stdint.h>`, `#include <string.h>`
-- [ ] `[IMPL-MM]` Déclarer `extern "C" {` avec les 3 prototypes vides
-- [ ] `[IMPL-MM]` Définir `typedef void* CoreMLHandle`
-- [ ] `[TEST-U]` **Test de compilation :** `cargo build -p inference_ml` — le `.mm` compile avec `-fobjc-arc`
+- [x] `[IMPL-MM]` Ajouter les imports : `#import <CoreML/CoreML.h>`, `#include <stdint.h>`, `#include <string.h>`
+- [x] `[IMPL-MM]` Déclarer `extern "C" {` avec les 3 prototypes vides
+- [x] `[IMPL-MM]` Définir `typedef void* CoreMLHandle`
+- [x] `[TEST-U]` **Test de compilation :** `cargo build -p inference_ml` — le `.mm` compile avec `-fobjc-arc`
 
 ### P4.2 — Implémentation de `coreml_load`
 
-- [ ] `[IMPL-MM]` Convertir `mlmodelc_path` en `NSString` via `stringWithUTF8String:`
-- [ ] `[IMPL-MM]` Créer un `NSURL` avec `fileURLWithPath:`
-- [ ] `[IMPL-MM]` Instancier `MLModelConfiguration` et positionner `computeUnits = MLComputeUnitsAll`
-- [ ] `[IMPL-MM]` Appeler `[MLModel modelWithContentsOfURL:url configuration:config error:&err]`
-- [ ] `[IMPL-MM]` Si `err != nil` : logger l'erreur via `NSLog` et retourner `nullptr`
-- [ ] `[IMPL-MM]` Retourner `(CoreMLHandle)CFBridgingRetain(model)` pour transférer la propriété ARC à Rust
+- [x] `[IMPL-MM]` Convertir `mlmodelc_path` en `NSString` via `stringWithUTF8String:`
+- [x] `[IMPL-MM]` Créer un `NSURL` avec `fileURLWithPath:`
+- [x] `[IMPL-MM]` Instancier `MLModelConfiguration` et positionner `computeUnits = MLComputeUnitsAll`
+- [x] `[IMPL-MM]` Appeler `[MLModel modelWithContentsOfURL:url configuration:config error:&err]`
+- [x] `[IMPL-MM]` Si `err != nil` : logger l'erreur via `NSLog` et retourner `nullptr`
+- [x] `[IMPL-MM]` Retourner `(CoreMLHandle)CFBridgingRetain(model)` pour transférer la propriété ARC à Rust
 - [ ] `[TEST-I]` **Test d'intégration :** Appeler `coreml_load` avec le chemin du modèle mock — doit retourner un handle non null
 
 ### P4.3 — Implémentation de `coreml_infer`
 
-- [ ] `[IMPL-MM]` Récupérer le `MLModel*` via `(__bridge MLModel*)handle`
-- [ ] `[IMPL-MM]` Créer `MLMultiArray` avec shape `@[@1, @1, @98, @13]` et type `MLMultiArrayDataTypeFloat32`
-- [ ] `[IMPL-MM]` Copier `mfcc_flat` dans `array.dataPointer` via `memcpy(array.dataPointer, mfcc_flat, len * sizeof(float))`
-- [ ] `[IMPL-MM]` Créer `MLFeatureValue` → `NSDictionary` → `MLDictionaryFeatureProvider`
-- [ ] `[IMPL-MM]` Appeler `[model predictionFromFeatures:input error:&err]`
-- [ ] `[IMPL-MM]` Extraire `[output featureValueForName:@"classLabel_probs"].multiArrayValue`
-- [ ] `[IMPL-MM]` Retourner `[probs objectAtIndexedSubscript:1].floatValue` (index 1 = wake-word)
-- [ ] `[IMPL-MM]` En cas d'erreur : logger et retourner `0.0f`
+- [x] `[IMPL-MM]` Récupérer le `MLModel*` via `(__bridge MLModel*)handle`
+- [x] `[IMPL-MM]` Créer `MLMultiArray` avec shape `@[@1, @98, @13]` et type `MLMultiArrayDataTypeFloat32` *(shape 3D — voir note P2.1)*
+- [x] `[IMPL-MM]` Copier `mfcc_flat` dans `array.dataPointer` via `memcpy(array.dataPointer, mfcc_flat, len * sizeof(float))`
+- [x] `[IMPL-MM]` Créer `MLFeatureValue` → `NSDictionary` → `MLDictionaryFeatureProvider`
+- [x] `[IMPL-MM]` Appeler `[model predictionFromFeatures:input error:&err]`
+- [x] `[IMPL-MM]` Extraire `[output featureValueForName:@"classLabel_probs"].multiArrayValue`
+- [x] `[IMPL-MM]` Retourner `[probs objectAtIndexedSubscript:1].floatValue` (index 1 = wake-word)
+- [x] `[IMPL-MM]` En cas d'erreur : logger et retourner `0.0f`
 - [ ] `[TEST-I]` **Test d'intégration :** Appeler `coreml_infer` avec le modèle mock et une matrice de zéros — doit retourner une valeur dans [0.0, 1.0] sans crash
 
 ### P4.4 — Implémentation de `coreml_free`
 
-- [ ] `[IMPL-MM]` Appeler `CFBridgingRelease(handle)` pour redonner la propriété à ARC et libérer l'objet
+- [x] `[IMPL-MM]` Appeler `CFBridgingRelease(handle)` pour redonner la propriété à ARC et libérer l'objet
 - [ ] `[TEST-I]` **Test d'intégration :** `load → free` sans inférence — aucun crash, AddressSanitizer ne rapporte rien
 
 ### P4.5 — Robustesse du bridge
 
-- [ ] `[IMPL-MM]` `coreml_load` : vérifier que `path != nullptr` avant utilisation
-- [ ] `[IMPL-MM]` `coreml_infer` : vérifier que `handle != nullptr` et `mfcc_flat != nullptr`
-- [ ] `[IMPL-MM]` `coreml_free` : vérifier que `handle != nullptr` avant `CFBridgingRelease`
+- [x] `[IMPL-MM]` `coreml_load` : vérifier que `path != nullptr` avant utilisation
+- [x] `[IMPL-MM]` `coreml_infer` : vérifier que `handle != nullptr` et `mfcc_flat != nullptr`
+- [x] `[IMPL-MM]` `coreml_free` : vérifier que `handle != nullptr` avant `CFBridgingRelease`
 - [ ] `[TEST-I]` **Test d'intégration :** `coreml_load(nullptr)` → retourne `nullptr` sans crash
 - [ ] `[TEST-I]` **Test d'intégration :** `coreml_infer(nullptr, ...)` → retourne 0.0 sans crash
 
