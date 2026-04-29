@@ -97,26 +97,26 @@
 
 ### P2.1 — Déclarations FFI vDSP
 
-- [ ] `[IMPL]` Créer `src/pipeline_dsp/ffi.rs`
-- [ ] `[IMPL]` Déclarer la constante `kFFTRadix2: i32 = 0`
-- [ ] `[IMPL]` Déclarer la constante `kFFTDirection_Forward: i32 = 1`
-- [ ] `[IMPL]` Déclarer la struct `DSPSplitComplex { realp: *mut f32, imagp: *mut f32 }`
-- [ ] `[IMPL]` Déclarer `extern "C"` : `vDSP_create_fftsetup(log2n: u32, radix: i32) -> *mut c_void`
-- [ ] `[IMPL]` Déclarer `extern "C"` : `vDSP_fft_zrip(setup: *mut c_void, signal: *mut DSPSplitComplex, stride: u32, log2n: u32, direction: i32)`
-- [ ] `[IMPL]` Déclarer `extern "C"` : `vDSP_zvmags(input: *const DSPSplitComplex, i_stride: u32, output: *mut f32, o_stride: u32, n: u32)`
-- [ ] `[IMPL]` Déclarer `extern "C"` : `vDSP_vmul(a: *const f32, ia: u32, b: *const f32, ib: u32, c: *mut f32, ic: u32, n: u32)`
-- [ ] `[IMPL]` Déclarer `extern "C"` : `vDSP_destroy_fftsetup(setup: *mut c_void)`
-- [ ] `[TEST-U]` **Test de linkage :** Appeler `vDSP_create_fftsetup(9, 0)` puis `vDSP_destroy_fftsetup` dans un test — doit s'exécuter sans segfault
+- [x] `[IMPL]` Créer `src/pipeline_dsp/ffi.rs`
+- [x] `[IMPL]` Déclarer la constante `kFFTRadix2: i32 = 0`
+- [x] `[IMPL]` Déclarer la constante `kFFTDirection_Forward: i32 = 1`
+- [x] `[IMPL]` Déclarer la struct `DSPSplitComplex { realp: *mut f32, imagp: *mut f32 }`
+- [x] `[IMPL]` Déclarer `extern "C"` : `vDSP_create_fftsetup(log2n: u32, radix: i32) -> *mut c_void`
+- [x] `[IMPL]` Déclarer `extern "C"` : `vDSP_fft_zrip(setup: *mut c_void, signal: *mut DSPSplitComplex, stride: u32, log2n: u32, direction: i32)`
+- [x] `[IMPL]` Déclarer `extern "C"` : `vDSP_zvmags(input: *const DSPSplitComplex, i_stride: u32, output: *mut f32, o_stride: u32, n: u32)`
+- [x] `[IMPL]` Déclarer `extern "C"` : `vDSP_vmul(a: *const f32, ia: u32, b: *const f32, ib: u32, c: *mut f32, ic: u32, n: u32)`
+- [x] `[IMPL]` Déclarer `extern "C"` : `vDSP_destroy_fftsetup(setup: *mut c_void)`
+- [x] `[TEST-U]` **Test de linkage :** Appeler `vDSP_create_fftsetup(9, 0)` puis `vDSP_destroy_fftsetup` dans un test — doit s'exécuter sans segfault
 
 ### P2.2 — Déclarations FFI DCT et BLAS
 
-- [ ] `[IMPL]` Déclarer la constante `vDSP_DCT_II: i32 = 2`
-- [ ] `[IMPL]` Déclarer `extern "C"` : `vDSP_DCT_CreateSetup(prev: *mut c_void, n: u32, dct_type: i32) -> *mut c_void`
-- [ ] `[IMPL]` Déclarer `extern "C"` : `vDSP_DCT_Execute(setup: *mut c_void, input: *const f32, output: *mut f32)`
-- [ ] `[IMPL]` Déclarer `extern "C"` : `cblas_sgemv(order: i32, trans: i32, m: i32, n: i32, alpha: f32, a: *const f32, lda: i32, x: *const f32, incx: i32, beta: f32, y: *mut f32, incy: i32)`
-- [ ] `[IMPL]` Déclarer les constantes BLAS : `CblasRowMajor: i32 = 101`, `CblasNoTrans: i32 = 111`
-- [ ] `[TEST-U]` **Test de linkage DCT :** Créer et libérer un setup DCT de taille 40 — sans segfault
-- [ ] `[TEST-U]` **Test de linkage BLAS :** Appeler `cblas_sgemv` sur des vecteurs triviaux (1×1) — vérifier le résultat `2×3=6`
+- [x] `[IMPL]` Déclarer la constante `vDSP_DCT_II: i32 = 2`
+- [x] `[IMPL]` Déclarer `extern "C"` : `vDSP_DCT_CreateSetup(prev: *mut c_void, n: u32, dct_type: i32) -> *mut c_void`
+- [x] `[IMPL]` Déclarer `extern "C"` : `vDSP_DCT_Execute(setup: *mut c_void, input: *const f32, output: *mut f32)`
+- [x] `[IMPL]` Déclarer `extern "C"` : `cblas_sgemv(order: i32, trans: i32, m: i32, n: i32, alpha: f32, a: *const f32, lda: i32, x: *const f32, incx: i32, beta: f32, y: *mut f32, incy: i32)`
+- [x] `[IMPL]` Déclarer les constantes BLAS : `CblasRowMajor: i32 = 101`, `CblasNoTrans: i32 = 111`
+- [x] `[TEST-U]` **Test de linkage DCT :** Créer et libérer un setup DCT de taille 40 — sans segfault
+- [x] `[TEST-U]` **Test de linkage BLAS :** Appeler `cblas_sgemv` sur des vecteurs triviaux (1×1) — vérifier le résultat `2×3=6`
 
 ---
 
