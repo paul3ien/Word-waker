@@ -127,12 +127,12 @@
 
 ### P3.1 — Déclarations FFI
 
-- [ ] `[IMPL-RS]` Créer `src/inference_ml/ffi.rs`
-- [ ] `[IMPL-RS]` Déclarer le type `CoreMLHandle = *mut libc::c_void`
-- [ ] `[IMPL-RS]` Déclarer `extern "C" { fn coreml_load(path: *const libc::c_char) -> CoreMLHandle; }`
-- [ ] `[IMPL-RS]` Déclarer `extern "C" { fn coreml_infer(handle: CoreMLHandle, mfcc_flat: *const f32, len: libc::size_t) -> f32; }`
-- [ ] `[IMPL-RS]` Déclarer `extern "C" { fn coreml_free(handle: CoreMLHandle); }`
-- [ ] `[TEST-U]` **Test de compilation :** `cargo build -p inference_ml` avec le bridge `.mm` qui définit les 3 fonctions vides — doit linker sans symboles manquants
+- [x] `[IMPL-RS]` Créer `src/inference_ml/ffi.rs`
+- [x] `[IMPL-RS]` Déclarer le type `CoreMLHandle = *mut libc::c_void`
+- [x] `[IMPL-RS]` Déclarer `extern "C" { fn coreml_load(path: *const libc::c_char) -> CoreMLHandle; }`
+- [x] `[IMPL-RS]` Déclarer `extern "C" { fn coreml_infer(handle: CoreMLHandle, mfcc_flat: *const f32, len: libc::size_t) -> f32; }`
+- [x] `[IMPL-RS]` Déclarer `extern "C" { fn coreml_free(handle: CoreMLHandle); }`
+- [x] `[TEST-U]` **Test de compilation :** `cargo build -p inference_ml` avec le bridge `.mm` qui définit les 3 fonctions vides — doit linker sans symboles manquants
 
 ---
 
