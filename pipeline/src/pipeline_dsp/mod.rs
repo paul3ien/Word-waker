@@ -18,5 +18,7 @@ pub mod fft;
 pub mod mel_filterbank;
 /// Log des énergies Mel, DCT-II via vDSP, extraction des 13 coefficients MFCC.
 pub mod mfcc;
+/// Processeur de trame (chaîne complète) et accumulateur de trames MFCC.
+pub mod processor;
 
 pub use error::DspError;

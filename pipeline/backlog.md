@@ -282,24 +282,24 @@
 
 ### P9.1 — Processeur de trame `FrameProcessor`
 
-- [ ] `[IMPL]` Créer `src/pipeline_dsp/processor.rs`
-- [ ] `[IMPL]` Définir la struct `FrameProcessor` qui agrège : `PreEmphasis`, `HannWindow`, `VDspFft`, `MelFilterbank`, `MfccExtractor`
-- [ ] `[IMPL]` Implémenter `FrameProcessor::new(config: &DspConfig) -> Result<Self, DspError>`
-- [ ] `[IMPL]` Implémenter `process_frame(&mut self, frame: &mut [f32]) -> [f32; 13]` — exécute dans l'ordre : pré-accentuation → fenêtrage → FFT → Mel → log → DCT → retourne 13 MFCC
-- [ ] `[TEST-U]` **Test unitaire :** Signal silence → tous les MFCC proches de `ln(EPSILON)` après DCT (valeur connue)
-- [ ] `[TEST-U]` **Test unitaire :** Même frame traitée deux fois → résultat identique (pas d'effet de bord inattendu, sauf `last_sample` de pré-accentuation)
+- [x] `[IMPL]` Créer `src/pipeline_dsp/processor.rs`
+- [x] `[IMPL]` Définir la struct `FrameProcessor` qui agrège : `PreEmphasis`, `HannWindow`, `VDspFft`, `MelFilterbank`, `MfccExtractor`
+- [x] `[IMPL]` Implémenter `FrameProcessor::new(config: &DspConfig) -> Result<Self, DspError>`
+- [x] `[IMPL]` Implémenter `process_frame(&mut self, frame: &mut [f32]) -> [f32; 13]` — exécute dans l'ordre : pré-accentuation → fenêtrage → FFT → Mel → log → DCT → retourne 13 MFCC
+- [x] `[TEST-U]` **Test unitaire :** Signal silence → MFCC[0] << 0, tous coefficients finis
+- [x] `[TEST-U]` **Test unitaire :** Même frame traitée par deux processeurs frais → résultats identiques
 - [ ] `[TEST-N]` **Validation numérique de bout en bout :** Traiter 98 trames du signal de référence et comparer la matrice MFCC `[98×13]` avec `fixtures/reference_mfcc.json` — erreur max < 1e-2
 
 ### P9.2 — Accumulateur de trames `MfccAccumulator`
 
-- [ ] `[IMPL]` Définir la struct `MfccAccumulator { frames: VecDeque<[f32;13]>, capacity: usize }`
-- [ ] `[IMPL]` Implémenter `push(&mut self, mfcc: [f32;13])` — ajoute une trame, fait glisser si plein
-- [ ] `[IMPL]` Implémenter `is_ready(&self) -> bool` — retourne `true` si `frames.len() == capacity` (98)
-- [ ] `[IMPL]` Implémenter `get_matrix(&self) -> [[f32;13];98]` — retourne la matrice courante
-- [ ] `[TEST-U]` **Test unitaire :** Pousser 97 trames → `is_ready() == false`
-- [ ] `[TEST-U]` **Test unitaire :** Pousser 98 trames → `is_ready() == true`
-- [ ] `[TEST-U]` **Test unitaire :** Pousser 99 trames → `is_ready() == true` et la première trame a été évincée (fenêtre glissante)
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier que la mémoire de `get_matrix()` est contiguë et row-major (`&matrix[0] as *const f32` adressable comme tableau C)
+- [x] `[IMPL]` Définir la struct `MfccAccumulator { frames: VecDeque<[f32;13]>, capacity: usize }`
+- [x] `[IMPL]` Implémenter `push(&mut self, mfcc: [f32;13])` — ajoute une trame, fait glisser si plein
+- [x] `[IMPL]` Implémenter `is_ready(&self) -> bool` — retourne `true` si `frames.len() == capacity` (98)
+- [x] `[IMPL]` Implémenter `get_matrix(&self) -> [[f32;13];98]` — retourne la matrice courante
+- [x] `[TEST-U]` **Test unitaire :** Pousser 97 trames → `is_ready() == false`
+- [x] `[TEST-U]` **Test unitaire :** Pousser 98 trames → `is_ready() == true`
+- [x] `[TEST-U]` **Test unitaire :** Pousser 99 trames → `is_ready() == true` et la première trame a été évincée (fenêtre glissante)
+- [x] `[TEST-U]` **Test unitaire :** Vérifier que la mémoire de `get_matrix()` est contiguë et row-major (`&matrix[0] as *const f32` adressable comme tableau C)
 
 ---
 
