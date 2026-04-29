@@ -264,25 +264,25 @@
 
 ### P7.1 — Struct `InferenceEngine`
 
-- [ ] `[IMPL-RS]` Créer ou compléter `src/inference_ml/mod.rs`
-- [ ] `[IMPL-RS]` Définir `pub struct InferenceEngine { runner: InferenceRunner, config: InferenceConfig }`
-- [ ] `[IMPL-RS]` Implémenter `InferenceEngine::new(config: InferenceConfig) -> Result<Self, InferenceError>` : valide config, charge `CoreMLModel`, crée `InferenceRunner`
-- [ ] `[IMPL-RS]` Implémenter `InferenceEngine::start(rx: Receiver<[[f32;13];98]>, tx: Sender<f32>) -> Result<(), InferenceError>`
-- [ ] `[IMPL-RS]` Implémenter `InferenceEngine::stop() -> Result<(), InferenceError>`
-- [ ] `[IMPL-RS]` Implémenter `Drop for InferenceEngine` — appelle `stop()` silencieusement
+- [x] `[IMPL-RS]` Créer ou compléter `src/inference_ml/mod.rs`
+- [x] `[IMPL-RS]` Définir `pub struct InferenceEngine { runner: InferenceRunner, config: InferenceConfig }`
+- [x] `[IMPL-RS]` Implémenter `InferenceEngine::new(config: InferenceConfig) -> Result<Self, InferenceError>` : valide config, charge `CoreMLModel`, crée `InferenceRunner`
+- [x] `[IMPL-RS]` Implémenter `InferenceEngine::start(rx: Receiver<[[f32;13];98]>, tx: Sender<f32>) -> Result<(), InferenceError>`
+- [x] `[IMPL-RS]` Implémenter `InferenceEngine::stop() -> Result<(), InferenceError>`
+- [x] `[IMPL-RS]` Implémenter `Drop for InferenceEngine` — appelle `stop()` silencieusement
 
 ### P7.2 — Tests de la façade
 
-- [ ] `[TEST-I]` **Test d'intégration :** Cycle complet `new → start → 3 inférences → stop` avec modèle mock — tous les scores dans [0.0, 1.0]
+- [x] `[TEST-I]` **Test d'intégration :** Cycle complet `new → start → 3 inférences → stop` avec modèle mock — tous les scores dans [0.0, 1.0]
 - [ ] `[TEST-I]` **Test d'intégration :** Deux cycles `start/stop` consécutifs — idempotence, zéro panique
-- [ ] `[TEST-I]` **Test d'intégration :** Drop sans stop → propre
+- [x] `[TEST-I]` **Test d'intégration :** Drop sans stop → propre
 
 ### P7.3 — Mode standalone
 
-- [ ] `[IMPL-RS]` Créer `examples/standalone_inference.rs` (feature `standalone`)
-- [ ] `[IMPL-RS]` L'exemple charge le modèle mock, génère 10 matrices MFCC aléatoires, affiche les scores et la latence médiane, puis s'arrête
-- [ ] `[TEST-I]` **Test :** `cargo run --example standalone_inference --features standalone` — s'exécute sans erreur
-- [ ] `[VALID]` **Validation manuelle :** Les scores affichés sont dans [0.0, 1.0] et la latence est < 50 ms (CPU fallback acceptable ici)
+- [x] `[IMPL-RS]` Créer `examples/standalone_inference.rs` (feature `standalone`)
+- [x] `[IMPL-RS]` L'exemple charge le modèle mock, génère 10 matrices MFCC aléatoires, affiche les scores et la latence médiane, puis s'arrête
+- [x] `[TEST-I]` **Test :** `cargo run --example standalone_inference --features standalone` — s'exécute sans erreur
+- [x] `[VALID]` **Validation manuelle :** Les scores affichés sont dans [0.0, 1.0] et la latence est < 50 ms (CPU fallback acceptable ici) — latence médiane ~62 µs ✅
 
 ---
 

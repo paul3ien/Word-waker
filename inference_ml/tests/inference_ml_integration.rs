@@ -1,6 +1,6 @@
 use std::ffi::CString;
 use inference_ml::ffi;
-use inference_ml::{CoreMLModel, InferenceConfig, InferenceRunner};
+use inference_ml::{CoreMLModel, InferenceConfig, InferenceEngine, InferenceRunner};
 use crossbeam_channel::bounded;
 
 /// Chemin absolu vers le .mlmodelc compilé dans les fixtures du crate.
@@ -255,5 +255,54 @@ fn runner_100_inferences_no_memory_growth() {
     drop(tx_in);
     runner.stop();
 }
+
+// ─── P7.2 ────────────────────────────────────────────────────────────────────
+
+/// Cycle complet : new → start → 3 inférences → stop.
+#[test]
+fn engine_new_start_infer_stop() {
+    let config = mock_config();
+    let mut engine = InferenceEngine::new(config).expect("new échoué");
+
+    let (tx_in, rx_in) = bounded::<[[f32; 13]; 98]>(8);
+    let (tx_out, rx_out) = bounded::<f32>(8);
+
+    engine.start(rx_in, tx_out).expect("start échoué");
+
+    for _ in 0..3 {
+        tx_in.send([[0.0f32; 13]; 98]).expect("send échoué");
+    }
+
+    let mut scores = Vec::new();
+    for _ in 0..3 {
+        let s = rx_out.recv_timeout(std::time::Duration::from_secs(5))
+            .expect("timeout score");
+        scores.push(s);
+    }
+
+    drop(tx_in);
+    engine.stop().expect("stop échoué");
+
+    assert_eq!(scores.len(), 3);
+    for s in &scores {
+        assert!((0.0f32..=1.0f32).contains(s), "score={s} hors [0.0, 1.0]");
+    }
+}
+
+/// Drop sans stop() explicite → propre, pas de panique.
+#[test]
+fn engine_drop_without_stop_no_crash() {
+    let config = mock_config();
+    let mut engine = InferenceEngine::new(config).expect("new échoué");
+
+    let (_tx_in, rx_in) = bounded::<[[f32; 13]; 98]>(8);
+    let (tx_out, _rx_out) = bounded::<f32>(8);
+
+    engine.start(rx_in, tx_out).expect("start échoué");
+
+    // Drop implicite — InferenceEngine::drop appelle runner.stop()
+    drop(engine);
+}
+
 
 
