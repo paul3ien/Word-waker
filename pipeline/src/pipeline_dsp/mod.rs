@@ -10,5 +10,7 @@ pub mod ffi;
 pub mod preemphasis;
 /// Découpage en trames avec overlap.
 pub mod framing;
+/// Fenêtrage de Hann via vDSP_vmul.
+pub mod windowing;
 
 pub use error::DspError;

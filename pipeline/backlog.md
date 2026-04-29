@@ -179,13 +179,13 @@
 
 ### P5.1 — Implémentation
 
-- [ ] `[IMPL]` Créer `src/pipeline_dsp/windowing.rs`
-- [ ] `[IMPL]` Définir la struct `HannWindow { coefficients: Vec<f32>, size: usize }`
-- [ ] `[IMPL]` Implémenter `HannWindow::new(size: usize) -> Self` — calcule les coefficients `w[n] = 0.5 * (1 − cos(2π·n / (N−1)))` en Rust pur et les stocke
-- [ ] `[IMPL]` Implémenter `apply(&self, frame: &mut [f32])` — multiplie la trame par les coefficients via `vDSP_vmul` (in-place, résultat dans `frame`)
-- [ ] `[TEST-U]` **Test unitaire :** `coefficients[0]` et `coefficients[N-1]` sont 0.0 (ou très proche)
-- [ ] `[TEST-U]` **Test unitaire :** `coefficients[N/2]` est 1.0 (symétrie et maximum)
-- [ ] `[TEST-U]` **Test unitaire :** Appliquer sur un signal constant [1.0 × 400] → vérifier que la sortie correspond aux coefficients de Hann (erreur < 1e-6)
+- [x] `[IMPL]` Créer `src/pipeline_dsp/windowing.rs`
+- [x] `[IMPL]` Définir la struct `HannWindow { coefficients: Vec<f32>, size: usize }`
+- [x] `[IMPL]` Implémenter `HannWindow::new(size: usize) -> Self` — calcule les coefficients `w[n] = 0.5 * (1 − cos(2π·n / (N−1)))` en Rust pur et les stocke
+- [x] `[IMPL]` Implémenter `apply(&self, frame: &mut [f32])` — multiplie la trame par les coefficients via `vDSP_vmul` (in-place, résultat dans `frame`)
+- [x] `[TEST-U]` **Test unitaire :** `coefficients[0]` et `coefficients[N-1]` sont 0.0 (ou très proche)
+- [x] `[TEST-U]` **Test unitaire :** `coefficients[N/2]` est 1.0 (symétrie et maximum)
+- [x] `[TEST-U]` **Test unitaire :** Appliquer sur un signal constant [1.0 × 400] → vérifier que la sortie correspond aux coefficients de Hann (erreur < 1e-6)
 - [ ] `[TEST-N]` **Validation numérique :** Comparer avec `np.hanning(400)` (Python) — erreur max < 1e-6 par coefficient
 
 ---
