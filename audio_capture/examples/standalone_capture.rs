@@ -1,8 +1,10 @@
-//! Exemple standalone : capture 3 secondes, affiche les statistiques.
+//! Exemple standalone : capture N secondes (défaut : 3), affiche les statistiques.
 //!
 //! Lancer avec :
 //! ```sh
 //! cargo run --example standalone_capture --features standalone -p audio_capture
+//! # Ou pour 30 secondes (Instruments) :
+//! cargo run --example standalone_capture --features standalone -p audio_capture -- 30
 //! ```
 
 use audio_capture::{AudioCapture, AudioCaptureConfig};
@@ -10,6 +12,12 @@ use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
 fn main() {
+    // Durée passée en premier argument (défaut 3 s).
+    let secs: u64 = std::env::args()
+        .nth(1)
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(3);
+
     let config = AudioCaptureConfig::default();
     println!(
         "Configuration : {:.0} Hz, buffer {} frames, ring {} samples",
@@ -21,15 +29,15 @@ fn main() {
     let mut cap = AudioCapture::new(config).expect("Impossible d'initialiser la capture audio");
     cap.start(tx).expect("Impossible de démarrer la capture");
 
-    println!("Capture en cours… (3 secondes)");
+    println!("Capture en cours… ({} secondes)", secs);
     let start = Instant::now();
 
     let mut total_samples = 0usize;
     let mut total_batches = 0usize;
     let mut out_of_range = 0usize;
 
-    // On draine le receiver pendant 3 secondes.
-    while start.elapsed() < Duration::from_secs(3) {
+    // On draine le receiver pendant `secs` secondes.
+    while start.elapsed() < Duration::from_secs(secs) {
         while let Ok(batch) = rx.try_recv() {
             for &s in &batch {
                 if !(-1.0..=1.0).contains(&s) {

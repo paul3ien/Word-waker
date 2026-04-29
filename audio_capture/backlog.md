@@ -118,7 +118,7 @@
 
 - [x] `[TEST-I]` **Test d'intégration :** Lancer un thread producteur (1 million de push à 16 kHz simulé) et un thread consommateur en parallèle — vérifier zéro data race (avec `cargo test` sous ThreadSanitizer si disponible)
 - [x] `[TEST-U]` **Test unitaire :** Vérifier que `AudioRingBuffer` implémente `Send` et `Sync`
-- [ ] `[TEST-P]` **Benchmark :** Mesurer le throughput du ring buffer (push + pop) — doit supporter > 100 000 opérations/s sans dégradation
+- [x] `[TEST-P]` **Benchmark :** Mesurer le throughput du ring buffer (push + pop) — doit supporter > 100 000 opérations/s sans dégradation
 
 ---
 
@@ -290,10 +290,10 @@
 
 ### P7.5 — Tests de performance
 
-- [ ] `[TEST-P]` **Benchmark :** Throughput du ring buffer (push/pop 1M ops) via `cargo-criterion`
-- [ ] `[TEST-P]` **Benchmark :** Latence du consommateur (temps entre push et réception) — doit être < 15 ms en médiane
-- [ ] `[VALID]` **Validation Instruments :** CPU du processus pendant 30 s de capture en arrière-plan — doit rester < 0,2 %
-- [ ] `[VALID]` **Validation AddressSanitizer :** `RUSTFLAGS="-Z sanitizer=address" cargo +nightly test` — zéro erreur mémoire
+- [x] `[TEST-P]` **Benchmark :** Throughput du ring buffer (push/pop 1M ops) via `cargo-criterion`
+- [x] `[TEST-P]` **Benchmark :** Latence du consommateur (temps entre push et réception) — doit être < 15 ms en médiane
+- [x] `[VALID]` **Validation Instruments :** CPU du processus pendant 30 s de capture en arrière-plan — doit rester < 0,2 %
+- [x] `[VALID]` **Validation AddressSanitizer :** `RUSTFLAGS="-Z sanitizer=address" cargo +nightly test` — zéro erreur mémoire
 
 ---
 
