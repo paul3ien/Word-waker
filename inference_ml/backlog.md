@@ -79,22 +79,22 @@
 
 ### P1.1 — Type d'erreur du module
 
-- [ ] `[IMPL-RS]` Créer `src/inference_ml/error.rs`
-- [ ] `[IMPL-RS]` Définir l'enum `InferenceError` avec les variantes : `ModelNotFound(String)`, `LoadFailed(String)`, `NullHandle`, `InvalidInputShape { expected: (usize,usize,usize,usize), got: usize }`, `InferenceFailed(String)`, `OutputNotFound(String)`, `ChannelClosed`
-- [ ] `[IMPL-RS]` Implémenter `std::fmt::Display` pour `InferenceError`
-- [ ] `[IMPL-RS]` Implémenter `std::error::Error` pour `InferenceError`
-- [ ] `[TEST-U]` **Test unitaire :** Chaque variante produit un message `Display` non vide et distinct
-- [ ] `[TEST-U]` **Test unitaire :** `InferenceError` est `Send + Sync`
+- [x] `[IMPL-RS]` Créer `src/inference_ml/error.rs`
+- [x] `[IMPL-RS]` Définir l'enum `InferenceError` avec les variantes : `ModelNotFound(String)`, `LoadFailed(String)`, `NullHandle`, `InvalidInputShape { expected: (usize,usize,usize,usize), got: usize }`, `InferenceFailed(String)`, `OutputNotFound(String)`, `ChannelClosed`
+- [x] `[IMPL-RS]` Implémenter `std::fmt::Display` pour `InferenceError`
+- [x] `[IMPL-RS]` Implémenter `std::error::Error` pour `InferenceError`
+- [x] `[TEST-U]` **Test unitaire :** Chaque variante produit un message `Display` non vide et distinct
+- [x] `[TEST-U]` **Test unitaire :** `InferenceError` est `Send + Sync`
 
 ### P1.2 — Configuration
 
-- [ ] `[IMPL-RS]` Créer `src/inference_ml/config.rs`
-- [ ] `[IMPL-RS]` Définir la struct `InferenceConfig` : `model_path: String`, `input_name: String`, `output_name: String`, `n_frames: usize`, `n_mfcc: usize`
-- [ ] `[IMPL-RS]` Implémenter `Default` : `input_name="mfcc_input"`, `output_name="classLabel_probs"`, `n_frames=98`, `n_mfcc=13`
-- [ ] `[IMPL-RS]` Implémenter `validate(&self) -> Result<(), InferenceError>` : vérifier que `model_path` n'est pas vide, que `n_frames > 0`, que `n_mfcc > 0`
-- [ ] `[TEST-U]` **Test unitaire :** Config valide avec un chemin non vide → `validate()` retourne `Ok`
-- [ ] `[TEST-U]` **Test unitaire :** `model_path` vide → `validate()` retourne `Err(ModelNotFound)`
-- [ ] `[TEST-U]` **Test unitaire :** `n_frames = 0` → `validate()` retourne `Err`
+- [x] `[IMPL-RS]` Créer `src/inference_ml/config.rs`
+- [x] `[IMPL-RS]` Définir la struct `InferenceConfig` : `model_path: String`, `input_name: String`, `output_name: String`, `n_frames: usize`, `n_mfcc: usize`
+- [x] `[IMPL-RS]` Implémenter `Default` : `input_name="mfcc_input"`, `output_name="classLabel_probs"`, `n_frames=98`, `n_mfcc=13`
+- [x] `[IMPL-RS]` Implémenter `validate(&self) -> Result<(), InferenceError>` : vérifier que `model_path` n'est pas vide, que `n_frames > 0`, que `n_mfcc > 0`
+- [x] `[TEST-U]` **Test unitaire :** Config valide avec un chemin non vide → `validate()` retourne `Ok`
+- [x] `[TEST-U]` **Test unitaire :** `model_path` vide → `validate()` retourne `Err(ModelNotFound)`
+- [x] `[TEST-U]` **Test unitaire :** `n_frames = 0` → `validate()` retourne `Err`
 
 ---
 
