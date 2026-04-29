@@ -16,5 +16,7 @@ pub mod windowing;
 pub mod fft;
 /// Banc de filtres Mel (matrice triangulaire row-major, application via cblas_sgemv).
 pub mod mel_filterbank;
+/// Log des énergies Mel, DCT-II via vDSP, extraction des 13 coefficients MFCC.
+pub mod mfcc;
 
 pub use error::DspError;

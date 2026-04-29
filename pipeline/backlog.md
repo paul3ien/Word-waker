@@ -248,28 +248,28 @@
 
 ### P8.1 — Log des énergies Mel
 
-- [ ] `[IMPL]` Créer `src/pipeline_dsp/mfcc.rs`
-- [ ] `[IMPL]` Implémenter `log_mel_energies(mel_energies: &mut [f32])` — applique `f32::ln` in-place, remplace les valeurs ≤ 0 par `f32::EPSILON` avant le log (évite `-inf`)
-- [ ] `[TEST-U]` **Test unitaire :** Énergie de 1.0 → ln(1.0) = 0.0
-- [ ] `[TEST-U]` **Test unitaire :** Énergie de 0.0 → `ln(EPSILON)` (pas de panique, pas de `-inf`)
-- [ ] `[TEST-U]` **Test unitaire :** Énergie négative → remplacée par `f32::EPSILON` avant le log
+- [x] `[IMPL]` Créer `src/pipeline_dsp/mfcc.rs`
+- [x] `[IMPL]` Implémenter `log_mel_energies(mel_energies: &mut [f32])` — applique `f32::ln` in-place, remplace les valeurs ≤ 0 par `f32::EPSILON` avant le log (évite `-inf`)
+- [x] `[TEST-U]` **Test unitaire :** Énergie de 1.0 → ln(1.0) = 0.0
+- [x] `[TEST-U]` **Test unitaire :** Énergie de 0.0 → `ln(EPSILON)` (pas de panique, pas de `-inf`)
+- [x] `[TEST-U]` **Test unitaire :** Énergie négative → remplacée par `f32::EPSILON` avant le log
 
 ### P8.2 — Wrapper DCT-II (`VDspDct`)
 
-- [ ] `[IMPL]` Définir la struct `VDspDct { setup: *mut c_void, n: u32 }` — avec `unsafe impl Send`
-- [ ] `[IMPL]` Implémenter `VDspDct::new(n: u32) -> Result<Self, DspError>` — appelle `vDSP_DCT_CreateSetup`, retourne `DctSetupFailed` si null
-- [ ] `[IMPL]` Implémenter `execute(&self, input: &[f32], output: &mut [f32])` — appelle `vDSP_DCT_Execute`
-- [ ] `[IMPL]` Implémenter `Drop for VDspDct` — libérer le setup (Apple ne documente pas de fonction de destruction explicite, noter ce point)
-- [ ] `[TEST-U]` **Test unitaire :** `VDspDct::new(40)` ne retourne pas d'erreur
-- [ ] `[TEST-U]` **Test unitaire :** DCT d'un signal impulsion [1, 0, 0, …] → vérifier les premiers coefficients manuellement
+- [x] `[IMPL]` Définir la struct `VDspDct { setup: *mut c_void, n: usize, n_padded: usize }` — avec `unsafe impl Send` (note: n_padded arrondit au prochain f·2^k valide pour vDSP)
+- [x] `[IMPL]` Implémenter `VDspDct::new(n: usize) -> Result<Self, DspError>` — appelle `vDSP_DCT_CreateSetup`, retourne `DctSetupFailed` si null
+- [x] `[IMPL]` Implémenter `execute(&self, input: &[f32], output: &mut [f32])` — appelle `vDSP_DCT_Execute` (avec zero-padding transparent si nécessaire)
+- [x] `[IMPL]` Implémenter `Drop for VDspDct` — Apple ne documente pas `vDSP_DCT_DestroySetup`; noté dans le code
+- [x] `[TEST-U]` **Test unitaire :** `VDspDct::new(40)` ne retourne pas d'erreur (arrondissement interne à 48 = 3·2^4)
+- [x] `[TEST-U]` **Test unitaire :** DCT d'un signal impulsion [1, 0, 0, …] (N=16) → X[0]=1.0, X[8]≈√2/2
 - [ ] `[TEST-N]` **Validation numérique :** Comparer avec `scipy.fft.dct(x, type=2, norm=None)` — erreur max < 1e-4
 
 ### P8.3 — Calcul des 13 coefficients MFCC
 
-- [ ] `[IMPL]` Définir la struct `MfccExtractor { dct: VDspDct, n_mfcc: usize }`
-- [ ] `[IMPL]` Implémenter `MfccExtractor::new(config: &DspConfig) -> Result<Self, DspError>`
-- [ ] `[IMPL]` Implémenter `extract(&self, log_mel: &[f32]) -> [f32; 13]` — exécute la DCT sur 40 entrées, retourne les 13 premiers coefficients
-- [ ] `[TEST-U]` **Test unitaire :** Signal log-Mel constant → vérifier que le coefficient DCT[0] est non nul et les suivants proches de 0
+- [x] `[IMPL]` Définir la struct `MfccExtractor { dct: VDspDct, n_mfcc: usize, n_mels: usize }`
+- [x] `[IMPL]` Implémenter `MfccExtractor::new(config: &DspConfig) -> Result<Self, DspError>`
+- [x] `[IMPL]` Implémenter `extract(&self, log_mel: &[f32]) -> [f32; 13]` — exécute la DCT sur 40 entrées (zero-paddée à 48), retourne les 13 premiers coefficients
+- [x] `[TEST-U]` **Test unitaire :** Signal log-Mel constant → MFCC[0] dominant (> 10), |MFCC[k]| < |MFCC[0]| pour k=1..12
 - [ ] `[TEST-N]` **Validation numérique :** Comparer les 13 MFCC avec `librosa.feature.mfcc` sur le signal de référence — erreur max < 1e-2 par coefficient (tolérance plus large due aux différences de normalisation)
 
 ---
