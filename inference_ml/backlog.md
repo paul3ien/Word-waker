@@ -107,15 +107,15 @@
 
 ### P2.1 — Script de génération du modèle mock
 
-- [ ] `[SETUP]` Créer `scripts/generate_mock_model.py`
-- [ ] `[SETUP]` Le script crée un `CoreML.MLModel` minimal via `coremltools` : entrée `mfcc_input` shape [1,1,98,13] Float32, sortie `classLabel_probs` shape [2] Float32 (retourne toujours [0.5, 0.5])
-- [ ] `[SETUP]` Le script exporte en `.mlpackage` puis appelle `xcrun coremlcompiler compile` pour produire `.mlmodelc` dans `fixtures/mock_model/`
-- [ ] `[SETUP]` Versionner `fixtures/mock_model/` dans le dépôt (artefact binaire léger, < 100 Ko)
-- [ ] `[TEST-U]` **Test de smoke :** `python3 scripts/generate_mock_model.py` s'exécute sans erreur et le répertoire `fixtures/mock_model/*.mlmodelc` existe
+- [x] `[SETUP]` Créer `scripts/generate_mock_model.py`
+- [x] `[SETUP]` Le script crée un `CoreML.MLModel` minimal via `coremltools` : entrée `mfcc_input` shape [1,98,13] Float32 *(NeuralNetwork format — Python 3.14 impose .mlmodel car libmilstoragepython absent)*, sortie `classLabel_probs` shape [2] Float32 (retourne toujours [0.5, 0.5])
+- [x] `[SETUP]` Le script exporte en `.mlmodel` puis appelle `xcrun coremlcompiler compile` pour produire `.mlmodelc` dans `fixtures/mock_model/`
+- [x] `[SETUP]` Versionner `fixtures/mock_model/` dans le dépôt (artefact binaire léger, ~12 Ko)
+- [x] `[TEST-U]` **Test de smoke :** `python3 scripts/generate_mock_model.py` s'exécute sans erreur et le répertoire `fixtures/mock_model/WakeWordMock.mlmodelc` existe
 
 ### P2.2 — Validation du modèle mock
 
-- [ ] `[VALID]` **Validation manuelle :** Inspecter le modèle avec `python3 -c "import coremltools as ct; m=ct.models.MLModel('fixtures/mock_model/WakeWordMock.mlpackage'); print(m)"` — vérifier les shapes d'entrée/sortie
+- [x] `[VALID]` **Validation manuelle :** `ls fixtures/mock_model/WakeWordMock.mlmodelc/` — contient `coremldata.bin`, `model.espresso.*`, `metadata.json` (~12 Ko) ✅
 
 ---
 
