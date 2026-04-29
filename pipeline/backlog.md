@@ -220,22 +220,22 @@
 
 ### P7.1 — Calcul de la matrice de filtres
 
-- [ ] `[IMPL]` Créer `src/pipeline_dsp/mel_filterbank.rs`
-- [ ] `[IMPL]` Implémenter `hz_to_mel(hz: f32) -> f32` : `2595.0 * (1.0 + hz / 700.0).log10()`
-- [ ] `[IMPL]` Implémenter `mel_to_hz(mel: f32) -> f32` : `700.0 * (10.0_f32.powf(mel / 2595.0) - 1.0)`
-- [ ] `[IMPL]` Définir la struct `MelFilterbank { matrix: Vec<f32>, n_mels: usize, n_fft_bins: usize }` (matrice stockée row-major `n_mels × (n_fft/2)`)
-- [ ] `[IMPL]` Implémenter `MelFilterbank::new(config: &DspConfig) -> Self` — calcule les centres Mel linéairement espacés, puis les filtres triangulaires et stocke la matrice
-- [ ] `[TEST-U]` **Test unitaire :** `hz_to_mel(700.0)` retourne ≈ 776.45 (valeur tabulée)
-- [ ] `[TEST-U]` **Test unitaire :** `mel_to_hz(hz_to_mel(1000.0))` ≈ 1000.0 (bijection)
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier que la matrice a `n_mels × (n_fft/2) = 40 × 256 = 10240` éléments
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier que chaque filtre (ligne de la matrice) est non négatif et que la somme des coefficients est > 0
+- [x] `[IMPL]` Créer `src/pipeline_dsp/mel_filterbank.rs`
+- [x] `[IMPL]` Implémenter `hz_to_mel(hz: f32) -> f32` : `2595.0 * (1.0 + hz / 700.0).log10()`
+- [x] `[IMPL]` Implémenter `mel_to_hz(mel: f32) -> f32` : `700.0 * (10.0_f32.powf(mel / 2595.0) - 1.0)`
+- [x] `[IMPL]` Définir la struct `MelFilterbank { matrix: Vec<f32>, n_mels: usize, n_fft_bins: usize }` (matrice stockée row-major `n_mels × (n_fft/2)`)
+- [x] `[IMPL]` Implémenter `MelFilterbank::new(config: &DspConfig) -> Self` — calcule les centres Mel linéairement espacés, puis les filtres triangulaires et stocke la matrice
+- [x] `[TEST-U]` **Test unitaire :** `hz_to_mel(700.0)` retourne ≈ 781.17 (correction : `2595·log10(2) = 781.17`, la valeur 776.45 du backlog était erronée)
+- [x] `[TEST-U]` **Test unitaire :** `mel_to_hz(hz_to_mel(1000.0))` ≈ 1000.0 (bijection)
+- [x] `[TEST-U]` **Test unitaire :** Vérifier que la matrice a `n_mels × (n_fft/2) = 40 × 256 = 10240` éléments
+- [x] `[TEST-U]` **Test unitaire :** Vérifier que chaque filtre (ligne de la matrice) est non négatif et que la somme des coefficients est > 0
 - [ ] `[TEST-N]` **Validation numérique :** Comparer la matrice avec `librosa.filters.mel(sr=16000, n_fft=512, n_mels=40, fmin=20, fmax=8000)` — erreur max < 1e-4 par coefficient
 
 ### P7.2 — Application des filtres
 
-- [ ] `[IMPL]` Implémenter `apply(&self, magnitudes: &[f32]) -> Vec<f32>` — multiplie la matrice par le vecteur de magnitudes via `cblas_sgemv`, retourne un vecteur de 40 énergies Mel
-- [ ] `[TEST-U]` **Test unitaire :** Spectre plat [1.0 × 256] → vérifier que les 40 énergies sont > 0 et cohérentes avec les largeurs de bande
-- [ ] `[TEST-U]` **Test unitaire :** Spectre nul [0.0 × 256] → toutes les énergies sont 0.0
+- [x] `[IMPL]` Implémenter `apply(&self, magnitudes: &[f32]) -> Vec<f32>` — multiplie la matrice par le vecteur de magnitudes via `cblas_sgemv`, retourne un vecteur de 40 énergies Mel
+- [x] `[TEST-U]` **Test unitaire :** Spectre plat [1.0 × 256] → vérifier que les 40 énergies sont > 0 et cohérentes avec les largeurs de bande
+- [x] `[TEST-U]` **Test unitaire :** Spectre nul [0.0 × 256] → toutes les énergies sont 0.0
 - [ ] `[TEST-N]` **Validation numérique :** Appliquer sur un spectre de référence et comparer avec `librosa` — erreur < 1e-3 par filtre
 
 ---
