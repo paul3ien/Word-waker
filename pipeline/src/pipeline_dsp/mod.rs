@@ -20,5 +20,9 @@ pub mod mel_filterbank;
 pub mod mfcc;
 /// Processeur de trame (chaîne complète) et accumulateur de trames MFCC.
 pub mod processor;
+/// Façade de haut niveau : Framer + FrameProcessor + MfccAccumulator.
+pub mod pipeline;
+/// Thread DSP runner : lit des batches et envoie des matrices MFCC via channels.
+pub mod runner;
 
 pub use error::DspError;

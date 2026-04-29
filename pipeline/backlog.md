@@ -311,21 +311,21 @@
 
 ### P10.1 — Façade `DspPipeline`
 
-- [ ] `[IMPL]` Créer ou compléter `src/pipeline_dsp/mod.rs`
-- [ ] `[IMPL]` Définir la struct `DspPipeline` qui agrège `Framer`, `FrameProcessor`, `MfccAccumulator`
-- [ ] `[IMPL]` Implémenter `DspPipeline::new(config: DspConfig) -> Result<Self, DspError>`
-- [ ] `[IMPL]` Implémenter `process_batch(&mut self, samples: &[f32]) -> Vec<[[f32;13];98]>` — traite un batch, retourne zéro ou plusieurs matrices MFCC selon l'accumulation
+- [x] `[IMPL]` Créer `src/pipeline_dsp/pipeline.rs`
+- [x] `[IMPL]` Définir la struct `DspPipeline` qui agrège `Framer`, `FrameProcessor`, `MfccAccumulator`
+- [x] `[IMPL]` Implémenter `DspPipeline::new(config: DspConfig) -> Result<Self, DspError>`
+- [x] `[IMPL]` Implémenter `process_batch(&mut self, samples: &[f32]) -> Vec<[[f32;13];98]>` — traite un batch, retourne zéro ou plusieurs matrices MFCC selon l'accumulation
 
 ### P10.2 — Thread DSP runner
 
-- [ ] `[IMPL]` Créer `src/pipeline_dsp/runner.rs`
-- [ ] `[IMPL]` Définir la struct `DspRunner { pipeline: DspPipeline, running: Arc<AtomicBool>, thread_handle: Option<JoinHandle<()>> }`
-- [ ] `[IMPL]` Implémenter `DspRunner::start(rx: Receiver<Vec<f32>>, tx: Sender<[[f32;13];98]>) -> Result<(), DspError>` — spawn d'un thread qui appelle `process_batch` sur chaque batch reçu et envoie les matrices produites
-- [ ] `[IMPL]` Implémenter `DspRunner::stop()` — pose `running` à false et `join` le thread
-- [ ] `[IMPL]` Implémenter `Drop for DspRunner` — appelle `stop()` silencieusement
-- [ ] `[TEST-I]` **Test d'intégration :** Envoyer 3 secondes de signal synthétique (sinus 440 Hz à 16 kHz) via le channel — vérifier que ≥ 2 matrices MFCC sont reçues
-- [ ] `[TEST-I]` **Test d'intégration :** Fermer le `Sender` → vérifier que le thread DSP se termine proprement sans panic
-- [ ] `[TEST-I]` **Test d'intégration :** Drop sans stop → vérifier zéro thread zombie
+- [x] `[IMPL]` Créer `src/pipeline_dsp/runner.rs`
+- [x] `[IMPL]` Définir la struct `DspRunner { running: Arc<AtomicBool>, thread_handle: Option<JoinHandle<()>> }`
+- [x] `[IMPL]` Implémenter `DspRunner::start(config: DspConfig, rx: Receiver<Vec<f32>>, tx: Sender<[[f32;13];98]>) -> Result<Self, DspError>` — spawn d'un thread avec `recv_timeout(50ms)` + flag `running`
+- [x] `[IMPL]` Implémenter `stop(&mut self)` — pose `running` à false et join le thread
+- [x] `[IMPL]` Implémenter `Drop for DspRunner` — appelle `stop()` silencieusement
+- [x] `[TEST-I]` **Test d'intégration :** Envoyer 3 secondes de signal synthétique (sinus 440 Hz à 16 kHz) via le channel — vérifier que ≥ 2 matrices MFCC sont reçues
+- [x] `[TEST-I]` **Test d'intégration :** Fermer le `Sender` → vérifier que le thread DSP se termine proprement sans panic
+- [x] `[TEST-I]` **Test d'intégration :** Drop sans stop → vérifier zéro thread zombie
 
 ### P10.3 — Mode standalone
 
