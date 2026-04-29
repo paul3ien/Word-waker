@@ -157,7 +157,7 @@
 - [x] `[IMPL-MM]` Appeler `[MLModel modelWithContentsOfURL:url configuration:config error:&err]`
 - [x] `[IMPL-MM]` Si `err != nil` : logger l'erreur via `NSLog` et retourner `nullptr`
 - [x] `[IMPL-MM]` Retourner `(CoreMLHandle)CFBridgingRetain(model)` pour transférer la propriété ARC à Rust
-- [ ] `[TEST-I]` **Test d'intégration :** Appeler `coreml_load` avec le chemin du modèle mock — doit retourner un handle non null
+- [x] `[TEST-I]` **Test d'intégration :** Appeler `coreml_load` avec le chemin du modèle mock — doit retourner un handle non null
 
 ### P4.3 — Implémentation de `coreml_infer`
 
@@ -169,20 +169,20 @@
 - [x] `[IMPL-MM]` Extraire `[output featureValueForName:@"classLabel_probs"].multiArrayValue`
 - [x] `[IMPL-MM]` Retourner `[probs objectAtIndexedSubscript:1].floatValue` (index 1 = wake-word)
 - [x] `[IMPL-MM]` En cas d'erreur : logger et retourner `0.0f`
-- [ ] `[TEST-I]` **Test d'intégration :** Appeler `coreml_infer` avec le modèle mock et une matrice de zéros — doit retourner une valeur dans [0.0, 1.0] sans crash
+- [x] `[TEST-I]` **Test d'intégration :** Appeler `coreml_infer` avec le modèle mock et une matrice de zéros — doit retourner une valeur dans [0.0, 1.0] sans crash
 
 ### P4.4 — Implémentation de `coreml_free`
 
 - [x] `[IMPL-MM]` Appeler `CFBridgingRelease(handle)` pour redonner la propriété à ARC et libérer l'objet
-- [ ] `[TEST-I]` **Test d'intégration :** `load → free` sans inférence — aucun crash, AddressSanitizer ne rapporte rien
+- [x] `[TEST-I]` **Test d'intégration :** `load → free` sans inférence — aucun crash, AddressSanitizer ne rapporte rien
 
 ### P4.5 — Robustesse du bridge
 
 - [x] `[IMPL-MM]` `coreml_load` : vérifier que `path != nullptr` avant utilisation
 - [x] `[IMPL-MM]` `coreml_infer` : vérifier que `handle != nullptr` et `mfcc_flat != nullptr`
 - [x] `[IMPL-MM]` `coreml_free` : vérifier que `handle != nullptr` avant `CFBridgingRelease`
-- [ ] `[TEST-I]` **Test d'intégration :** `coreml_load(nullptr)` → retourne `nullptr` sans crash
-- [ ] `[TEST-I]` **Test d'intégration :** `coreml_infer(nullptr, ...)` → retourne 0.0 sans crash
+- [x] `[TEST-I]` **Test d'intégration :** `coreml_load(nullptr)` → retourne `nullptr` sans crash
+- [x] `[TEST-I]` **Test d'intégration :** `coreml_infer(nullptr, ...)` → retourne 0.0 sans crash
 
 ---
 
@@ -194,34 +194,34 @@
 
 ### P5.1 — Struct et constructeur
 
-- [ ] `[IMPL-RS]` Créer `src/inference_ml/model.rs`
-- [ ] `[IMPL-RS]` Définir `pub struct CoreMLModel { handle: ffi::CoreMLHandle }`
-- [ ] `[IMPL-RS]` Déclarer `unsafe impl Send for CoreMLModel {}` et `unsafe impl Sync for CoreMLModel {}`
-- [ ] `[IMPL-RS]` Implémenter `CoreMLModel::load(config: &InferenceConfig) -> Result<Self, InferenceError>` :
-  - [ ] `[IMPL-RS]` Vérifier que le chemin existe (`std::path::Path::exists`)
-  - [ ] `[IMPL-RS]` Construire un `CString` depuis `config.model_path`
-  - [ ] `[IMPL-RS]` Appeler `unsafe { ffi::coreml_load(cstring.as_ptr()) }`
-  - [ ] `[IMPL-RS]` Vérifier que le handle n'est pas null → `Err(InferenceError::NullHandle)` sinon
-- [ ] `[TEST-I]` **Test d'intégration :** `CoreMLModel::load` avec le modèle mock → `Ok`
-- [ ] `[TEST-I]` **Test d'intégration :** `CoreMLModel::load` avec un chemin inexistant → `Err(ModelNotFound)`
+- [x] `[IMPL-RS]` Créer `src/inference_ml/model.rs`
+- [x] `[IMPL-RS]` Définir `pub struct CoreMLModel { handle: ffi::CoreMLHandle }`
+- [x] `[IMPL-RS]` Déclarer `unsafe impl Send for CoreMLModel {}` et `unsafe impl Sync for CoreMLModel {}`
+- [x] `[IMPL-RS]` Implémenter `CoreMLModel::load(config: &InferenceConfig) -> Result<Self, InferenceError>` :
+  - [x] `[IMPL-RS]` Vérifier que le chemin existe (`std::path::Path::exists`)
+  - [x] `[IMPL-RS]` Construire un `CString` depuis `config.model_path`
+  - [x] `[IMPL-RS]` Appeler `unsafe { ffi::coreml_load(cstring.as_ptr()) }`
+  - [x] `[IMPL-RS]` Vérifier que le handle n'est pas null → `Err(InferenceError::NullHandle)` sinon
+- [x] `[TEST-I]` **Test d'intégration :** `CoreMLModel::load` avec le modèle mock → `Ok`
+- [x] `[TEST-I]` **Test d'intégration :** `CoreMLModel::load` avec un chemin inexistant → `Err(ModelNotFound)`
 - [ ] `[TEST-U]` **Test unitaire (feature mock_model) :** `CoreMLModel::load` retourne un stub sans appeler le bridge FFI
 
 ### P5.2 — Méthode d'inférence
 
-- [ ] `[IMPL-RS]` Implémenter `CoreMLModel::infer(&self, mfcc: &[[f32;13];98]) -> Result<f32, InferenceError>` :
-  - [ ] `[IMPL-RS]` Aplatir `mfcc` en `Vec<f32>` via `mfcc.iter().flatten().copied().collect()`
-  - [ ] `[IMPL-RS]` Appeler `unsafe { ffi::coreml_infer(self.handle, flat.as_ptr(), flat.len()) }`
-  - [ ] `[IMPL-RS]` Vérifier que le score retourné est dans [0.0, 1.0] (invariant de contrat) → `Err(InferenceFailed)` sinon
-- [ ] `[TEST-I]` **Test d'intégration :** Inférence sur matrice de zéros → score dans [0.0, 1.0]
-- [ ] `[TEST-I]` **Test d'intégration :** Inférence sur matrice de valeurs aléatoires → score dans [0.0, 1.0]
+- [x] `[IMPL-RS]` Implémenter `CoreMLModel::infer(&self, mfcc: &[[f32;13];98]) -> Result<f32, InferenceError>` :
+  - [x] `[IMPL-RS]` Aplatir `mfcc` en `Vec<f32>` via `mfcc.iter().flatten().copied().collect()`
+  - [x] `[IMPL-RS]` Appeler `unsafe { ffi::coreml_infer(self.handle, flat.as_ptr(), flat.len()) }`
+  - [x] `[IMPL-RS]` Vérifier que le score retourné est dans [0.0, 1.0] (invariant de contrat) → `Err(InferenceFailed)` sinon
+- [x] `[TEST-I]` **Test d'intégration :** Inférence sur matrice de zéros → score dans [0.0, 1.0]
+- [x] `[TEST-I]` **Test d'intégration :** Inférence sur matrice de valeurs aléatoires → score dans [0.0, 1.0]
 - [ ] `[TEST-U]` **Test unitaire :** Score = -0.1 retourné par le bridge → `Err(InferenceFailed)` (validation de l'invariant)
 - [ ] `[TEST-U]` **Test unitaire :** Score = 1.1 → `Err(InferenceFailed)`
 
 ### P5.3 — Drop et gestion mémoire
 
-- [ ] `[IMPL-RS]` Implémenter `Drop for CoreMLModel` : appelle `unsafe { ffi::coreml_free(self.handle) }` si le handle n'est pas null
-- [ ] `[TEST-I]` **Test d'intégration :** Créer une instance dans un scope, vérifier via AddressSanitizer que le `MLModel` est libéré à la sortie du scope — zéro fuite
-- [ ] `[TEST-I]` **Test d'intégration :** Créer et dropper 1000 instances successives → consommation mémoire stable
+- [x] `[IMPL-RS]` Implémenter `Drop for CoreMLModel` : appelle `unsafe { ffi::coreml_free(self.handle) }` si le handle n'est pas null
+- [x] `[TEST-I]` **Test d'intégration :** Créer une instance dans un scope, vérifier via AddressSanitizer que le `MLModel` est libéré à la sortie du scope — zéro fuite
+- [x] `[TEST-I]` **Test d'intégration :** Créer et dropper 1000 instances successives → consommation mémoire stable
 
 ---
 
