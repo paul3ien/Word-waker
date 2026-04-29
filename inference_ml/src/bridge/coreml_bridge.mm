@@ -7,6 +7,7 @@ typedef void* CoreMLHandle;
 
 extern "C" {
     CoreMLHandle coreml_load(const char* path);
+    CoreMLHandle coreml_load_cpu_only(const char* path);
     float        coreml_infer(CoreMLHandle handle, const float* mfcc_flat, size_t len);
     void         coreml_free(CoreMLHandle handle);
 }
@@ -111,6 +112,35 @@ float coreml_infer(CoreMLHandle handle, const float* mfcc_flat, size_t len) {
     }
 
     return (float)[probs objectAtIndexedSubscript:1].doubleValue;
+}
+
+// ─── coreml_load_cpu_only ─────────────────────────────────────────────────────
+// Identique à coreml_load mais force MLComputeUnitsCPUOnly.
+// Utilisé pour les benchmarks CPU-only permettant de mesurer le gain ANE.
+CoreMLHandle coreml_load_cpu_only(const char* path) {
+    if (path == nullptr) {
+        fprintf(stderr, "[coreml_bridge] coreml_load_cpu_only: path est nullptr\n");
+        return nullptr;
+    }
+
+    NSString* modelPath = [NSString stringWithUTF8String:path];
+    NSURL*    modelURL  = [NSURL fileURLWithPath:modelPath];
+
+    MLModelConfiguration* config = [[MLModelConfiguration alloc] init];
+    config.computeUnits = MLComputeUnitsCPUOnly;
+
+    NSError* err = nil;
+    MLModel* model = [MLModel modelWithContentsOfURL:modelURL
+                                       configuration:config
+                                               error:&err];
+    fprintf(stderr, "[coreml_bridge] coreml_load_cpu_only: chargement '%s'\n", path);
+    if (err != nil || model == nil) {
+        const char* msg = err ? [err.localizedDescription UTF8String] : "model==nil";
+        fprintf(stderr, "[coreml_bridge] coreml_load_cpu_only: ECHEC — %s\n", msg);
+        return nullptr;
+    }
+
+    return (CoreMLHandle)CFBridgingRetain(model);
 }
 
 // ─── coreml_free ─────────────────────────────────────────────────────────────

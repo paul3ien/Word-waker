@@ -6,8 +6,13 @@ pub type CoreMLHandle = *mut c_void;
 
 extern "C" {
     /// Charge le modèle `.mlmodelc` situé à `path` (null-terminé).
+    /// Utilise `MLComputeUnitsAll` (ANE prioritaire).
     /// Retourne un handle non-null en cas de succès, null sinon.
     pub fn coreml_load(path: *const c_char) -> CoreMLHandle;
+
+    /// Idem que `coreml_load` mais force `MLComputeUnitsCPUOnly`.
+    /// Utilisé pour les benchmarks de comparaison CPU vs ANE.
+    pub fn coreml_load_cpu_only(path: *const c_char) -> CoreMLHandle;
 
     /// Lance une inférence synchrone.
     /// `mfcc_flat` : pointeur vers `len` floats (matrice MFCC aplatie).

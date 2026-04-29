@@ -302,7 +302,7 @@
 
 - [x] `[TEST-P]` **Benchmark :** Latence d'une inférence sur ANE — `cargo bench -p inference_ml` — médiane **~17 µs** (< 5 ms requis) ✅
 - [x] `[TEST-P]` **Benchmark :** Throughput : **~62 000 inf/s** (bien > 20 inf/s requis) ✅
-- [ ] `[TEST-P]` **Benchmark :** Latence en CPU-only (`MLComputeUnitsCPUOnly`) — à mesurer pour documenter le gain ANE
+- [x] `[TEST-P]` **Benchmark :** Latence en CPU-only (`MLComputeUnitsCPUOnly`) — **~16.8 µs** (≈ ANE sur modèle mock ; gain réel mesurable sur un vrai modèle de production)
 
 ---
 

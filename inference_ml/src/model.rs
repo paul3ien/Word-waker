@@ -38,10 +38,21 @@ impl CoreMLModel {
     /// Retourne `Err(ModelNotFound)` si le chemin n'existe pas,
     /// `Err(NullHandle)` si CoreML échoue à charger le modèle.
     pub fn load(config: &InferenceConfig) -> Result<Self, InferenceError> {
+        Self::load_inner(config, false)
+    }
+
+    /// Identique à [`load`] mais force `MLComputeUnitsCPUOnly`.
+    /// Utile pour les benchmarks mesurant le gain apporté par l'ANE.
+    pub fn load_cpu_only(config: &InferenceConfig) -> Result<Self, InferenceError> {
+        Self::load_inner(config, true)
+    }
+
+    fn load_inner(config: &InferenceConfig, cpu_only: bool) -> Result<Self, InferenceError> {
         // ── Feature mock_model : stub sans FFI ───────────────────────────────
         #[cfg(feature = "mock_model")]
         {
             let _ = config;
+            let _ = cpu_only;
             return Ok(CoreMLModel {
                 handle: std::ptr::null_mut(),
             });
@@ -57,7 +68,11 @@ impl CoreMLModel {
             let cpath = CString::new(config.model_path.as_str())
                 .map_err(|e| InferenceError::LoadFailed(e.to_string()))?;
 
-            let handle = unsafe { ffi::coreml_load(cpath.as_ptr()) };
+            let handle = if cpu_only {
+                unsafe { ffi::coreml_load_cpu_only(cpath.as_ptr()) }
+            } else {
+                unsafe { ffi::coreml_load(cpath.as_ptr()) }
+            };
 
             if handle.is_null() {
                 return Err(InferenceError::NullHandle);

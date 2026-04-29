@@ -44,5 +44,18 @@ fn bench_infer_throughput(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_infer_all_units, bench_infer_throughput);
+/// P8.2 — Latence CPU-only (`MLComputeUnitsCPUOnly`) pour mesurer le gain ANE.
+/// Charge le modèle sans le Neural Engine, puis mesure la médiane des inférences.
+fn bench_infer_cpu_only(c: &mut Criterion) {
+    let model = CoreMLModel::load_cpu_only(&mock_config()).expect("load_cpu_only échoué");
+    let mfcc = [[0.0f32; 13]; 98];
+
+    c.bench_function("infer/cpu_only", |b| {
+        b.iter(|| {
+            model.infer(&mfcc).expect("infer échoué");
+        });
+    });
+}
+
+criterion_group!(benches, bench_infer_all_units, bench_infer_cpu_only, bench_infer_throughput);
 criterion_main!(benches);
