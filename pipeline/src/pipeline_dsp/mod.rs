@@ -12,5 +12,7 @@ pub mod preemphasis;
 pub mod framing;
 /// Fenêtrage de Hann via vDSP_vmul.
 pub mod windowing;
+/// FFT réelle via vDSP_fft_zrip → spectre de magnitude.
+pub mod fft;
 
 pub use error::DspError;

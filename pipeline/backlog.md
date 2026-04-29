@@ -198,15 +198,15 @@
 
 ### P6.1 — Wrapper `VDspFft`
 
-- [ ] `[IMPL]` Créer `src/pipeline_dsp/fft.rs`
-- [ ] `[IMPL]` Définir la struct `VDspFft { setup: *mut c_void, n: usize, log2n: u32 }` — avec `unsafe impl Send`
-- [ ] `[IMPL]` Implémenter `VDspFft::new(n: usize) -> Result<Self, DspError>` — appelle `vDSP_create_fftsetup`, retourne `FftSetupFailed` si retour null
-- [ ] `[IMPL]` Implémenter `forward(&self, frame: &[f32]) -> Vec<f32>` — zero-pads jusqu'à `n_fft`, calcule FFT via `vDSP_fft_zrip`, appelle `vDSP_zvmags`, retourne le vecteur de magnitudes (`n_fft/2` éléments)
-- [ ] `[IMPL]` Implémenter `Drop for VDspFft` — appelle `vDSP_destroy_fftsetup`
-- [ ] `[TEST-U]` **Test unitaire :** `VDspFft::new(512)` ne retourne pas d'erreur
-- [ ] `[TEST-U]` **Test unitaire :** Signal silence (zéros) → toutes les magnitudes sont 0.0 (ou < 1e-10)
-- [ ] `[TEST-U]` **Test unitaire :** Signal sinusoïdal pur à 1000 Hz → pic de magnitude à la bin fréquentielle correspondante (vérifier l'index `round(1000 * 512 / 16000) = 32`)
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier que la sortie a exactement `n_fft/2 = 256` éléments
+- [x] `[IMPL]` Créer `src/pipeline_dsp/fft.rs`
+- [x] `[IMPL]` Définir la struct `VDspFft { setup: *mut c_void, n: usize, log2n: u32 }` — avec `unsafe impl Send`
+- [x] `[IMPL]` Implémenter `VDspFft::new(n: usize) -> Result<Self, DspError>` — appelle `vDSP_create_fftsetup`, retourne `FftSetupFailed` si retour null
+- [x] `[IMPL]` Implémenter `forward(&self, frame: &[f32]) -> Vec<f32>` — zero-pads jusqu'à `n_fft`, calcule FFT via `vDSP_fft_zrip`, appelle `vDSP_zvmags`, retourne le vecteur de magnitudes (`n_fft/2` éléments)
+- [x] `[IMPL]` Implémenter `Drop for VDspFft` — appelle `vDSP_destroy_fftsetup`
+- [x] `[TEST-U]` **Test unitaire :** `VDspFft::new(512)` ne retourne pas d'erreur
+- [x] `[TEST-U]` **Test unitaire :** Signal silence (zéros) → toutes les magnitudes sont 0.0 (ou < 1e-10)
+- [x] `[TEST-U]` **Test unitaire :** Signal sinusoïdal pur à 1000 Hz → pic de magnitude à la bin fréquentielle correspondante (vérifier l'index `round(1000 * 512 / 16000) = 32`)
+- [x] `[TEST-U]` **Test unitaire :** Vérifier que la sortie a exactement `n_fft/2 = 256` éléments
 - [ ] `[TEST-N]` **Validation numérique :** Comparer les magnitudes avec `np.abs(np.fft.rfft(frame, n=512))` (Python) — erreur relative < 1e-3 sur chaque bin
 - [ ] `[TEST-U]` **Test Drop :** Créer une instance dans un scope et vérifier (avec AddressSanitizer) que le setup est libéré
 
