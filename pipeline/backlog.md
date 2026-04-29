@@ -329,10 +329,10 @@
 
 ### P10.3 — Mode standalone
 
-- [ ] `[IMPL]` Créer `examples/standalone_dsp.rs` (feature `standalone`)
-- [ ] `[IMPL]` L'exemple génère 3 secondes de signal sinusoïdal 440 Hz, le fait passer dans le pipeline DSP, affiche les MFCC de la première matrice produite et log les statistiques (nb matrices, latence moyenne)
-- [ ] `[TEST-I]` **Test :** `cargo run --example standalone_dsp --features standalone` — s'exécute sans erreur
-- [ ] `[VALID]` **Validation manuelle :** Les valeurs MFCC affichées sont finies (pas de `NaN`, pas d'`inf`)
+- [x] `[IMPL]` Créer `examples/standalone_dsp.rs` (feature `standalone`)
+- [x] `[IMPL]` L'exemple génère 3 secondes de signal sinusoïdal 440 Hz, le fait passer dans le pipeline DSP, affiche les MFCC de la première matrice produite et log les statistiques (nb matrices, latence moyenne)
+- [x] `[TEST-I]` **Test :** `cargo run --example standalone_dsp --features standalone` — s'exécute sans erreur
+- [x] `[VALID]` **Validation manuelle :** Les valeurs MFCC affichées sont finies (pas de `NaN`, pas d'`inf`)
 
 ---
 
