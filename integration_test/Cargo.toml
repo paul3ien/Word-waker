@@ -1,0 +1,9 @@
+[package]
+name = "integration_test"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dev-dependencies]
+inference_ml = { path = "../inference_ml" }
+crossbeam-channel = "0.5"

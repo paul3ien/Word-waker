@@ -363,7 +363,7 @@
 
 - [x] `[SETUP]` Vérifier que `inference_ml` est bien dans le `[workspace]` racine
 - [x] `[SETUP]` Documenter dans `inference_ml/README.md` : comment générer le modèle mock, comment lancer les tests, comment brancher sur `pipeline_dsp`
-- [ ] `[TEST-I]` **Test d'intégration finale workspace :** Depuis un crate `integration_test` factice : simuler `pipeline_dsp → inference_ml` — envoyer des matrices MFCC synthétiques, vérifier que des scores sont reçus — sans erreur de compilation ni de runtime
+- [x] `[TEST-I]` **Test d'intégration finale workspace :** Depuis un crate `integration_test` factice : simuler `pipeline_dsp → inference_ml` — envoyer des matrices MFCC synthétiques, vérifier que des scores sont reçus — sans erreur de compilation ni de runtime
 
 ---
 
