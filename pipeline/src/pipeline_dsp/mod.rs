@@ -8,5 +8,7 @@ pub mod config;
 pub mod ffi;
 /// Filtre de pré-accentuation IIR du premier ordre.
 pub mod preemphasis;
+/// Découpage en trames avec overlap.
+pub mod framing;
 
 pub use error::DspError;

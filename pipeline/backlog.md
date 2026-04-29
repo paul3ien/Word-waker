@@ -153,21 +153,21 @@
 
 ### P4.1 — Implémentation
 
-- [ ] `[IMPL]` Créer `src/pipeline_dsp/framing.rs`
-- [ ] `[IMPL]` Définir la struct `Framer { buffer: Vec<f32>, frame_size: usize, hop_size: usize }`
-- [ ] `[IMPL]` Implémenter `Framer::new(frame_size: usize, hop_size: usize) -> Self`
-- [ ] `[IMPL]` Implémenter `push_samples(&mut self, samples: &[f32]) -> Vec<Vec<f32>>` — accumule les samples dans le buffer interne et retourne toutes les trames complètes disponibles (avec overlap)
-- [ ] `[IMPL]` Implémenter `reset(&mut self)` — vide le buffer interne
-- [ ] `[IMPL]` Implémenter `pending_samples(&self) -> usize` — nombre de samples dans le buffer en attente
+- [x] `[IMPL]` Créer `src/pipeline_dsp/framing.rs`
+- [x] `[IMPL]` Définir la struct `Framer { buffer: Vec<f32>, frame_size: usize, hop_size: usize }`
+- [x] `[IMPL]` Implémenter `Framer::new(frame_size: usize, hop_size: usize) -> Self`
+- [x] `[IMPL]` Implémenter `push_samples(&mut self, samples: &[f32]) -> Vec<Vec<f32>>` — accumule les samples dans le buffer interne et retourne toutes les trames complètes disponibles (avec overlap)
+- [x] `[IMPL]` Implémenter `reset(&mut self)` — vide le buffer interne
+- [x] `[IMPL]` Implémenter `pending_samples(&self) -> usize` — nombre de samples dans le buffer en attente
 
 ### P4.2 — Tests
 
-- [ ] `[TEST-U]` **Test unitaire :** Pousser exactement 400 samples → 1 trame retournée, buffer résiduel de 0 samples (hop=160, premier appel)
-- [ ] `[TEST-U]` **Test unitaire :** Pousser 160 samples puis 400 samples → vérifier le nombre correct de trames produites
-- [ ] `[TEST-U]` **Test unitaire :** Pousser 10 000 samples d'un coup → vérifier que le nombre de trames est `floor((10000 - 400) / 160) + 1`
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier que les trames sont bien de taille `frame_size` (pas de trame partielle)
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier l'overlap — le premier sample de la trame N+1 est bien le sample `hop_size` de la trame N
-- [ ] `[TEST-U]` **Test unitaire :** `reset()` — vider le buffer, vérifier `pending_samples() == 0`
+- [x] `[TEST-U]` **Test unitaire :** Pousser exactement 400 samples → 1 trame retournée, buffer résiduel de 0 samples (hop=160, premier appel)
+- [x] `[TEST-U]` **Test unitaire :** Pousser 160 samples puis 400 samples → vérifier le nombre correct de trames produites
+- [x] `[TEST-U]` **Test unitaire :** Pousser 10 000 samples d'un coup → vérifier que le nombre de trames est `floor((10000 - 400) / 160) + 1`
+- [x] `[TEST-U]` **Test unitaire :** Vérifier que les trames sont bien de taille `frame_size` (pas de trame partielle)
+- [x] `[TEST-U]` **Test unitaire :** Vérifier l'overlap — le premier sample de la trame N+1 est bien le sample `hop_size` de la trame N
+- [x] `[TEST-U]` **Test unitaire :** `reset()` — vider le buffer, vérifier `pending_samples() == 0`
 
 ---
 
