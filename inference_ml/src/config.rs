@@ -31,9 +31,7 @@ impl InferenceConfig {
     /// Vérifie que la configuration est cohérente.
     pub fn validate(&self) -> Result<(), InferenceError> {
         if self.model_path.is_empty() {
-            return Err(InferenceError::ModelNotFound(
-                "model_path est vide".into(),
-            ));
+            return Err(InferenceError::ModelNotFound("model_path est vide".into()));
         }
         if self.n_frames == 0 {
             return Err(InferenceError::InvalidInputShape {

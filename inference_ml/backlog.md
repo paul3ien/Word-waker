@@ -347,22 +347,22 @@
 
 ### P10.1 — Documentation
 
-- [ ] `[SETUP]` Ajouter doc-comments `///` sur tous les types et fonctions publics (`InferenceEngine`, `InferenceConfig`, `InferenceError`, `CoreMLModel`)
-- [ ] `[SETUP]` Écrire un doc-example dans `InferenceEngine::new` montrant le cycle minimal `new/start/stop`
-- [ ] `[SETUP]` Documenter dans le doc-comment de `CoreMLModel` la note de sécurité : "Le handle `MLModel` Obj-C est thread-safe en lecture — `unsafe impl Send/Sync` justifiés"
-- [ ] `[TEST-U]` **Test :** `cargo doc --no-deps -p inference_ml` — sans erreur ni warning
+- [x] `[SETUP]` Ajouter doc-comments `///` sur tous les types et fonctions publics (`InferenceEngine`, `InferenceConfig`, `InferenceError`, `CoreMLModel`)
+- [x] `[SETUP]` Écrire un doc-example dans `InferenceEngine::new` montrant le cycle minimal `new/start/stop`
+- [x] `[SETUP]` Documenter dans le doc-comment de `CoreMLModel` la note de sécurité : "Le handle `MLModel` Obj-C est thread-safe en lecture — `unsafe impl Send/Sync` justifiés"
+- [x] `[TEST-U]` **Test :** `cargo doc --no-deps -p inference_ml` — sans erreur ni warning
 
 ### P10.2 — Validation finale
 
-- [ ] `[VALID]` `cargo clippy -p inference_ml -- -D warnings` — zéro warning
-- [ ] `[VALID]` `cargo fmt --check -p inference_ml` — code formaté
-- [ ] `[VALID]` `cargo test -p inference_ml --features mock_model` — suite mock verte (sans modèle réel)
-- [ ] `[VALID]` `cargo build -p inference_ml --release` — compile proprement
+- [x] `[VALID]` `cargo clippy -p inference_ml -- -D warnings` — zéro warning
+- [x] `[VALID]` `cargo fmt --check -p inference_ml` — code formaté
+- [x] `[VALID]` `cargo test -p inference_ml --features mock_model` — suite mock verte (sans modèle réel)
+- [x] `[VALID]` `cargo build -p inference_ml --release` — compile proprement
 
 ### P10.3 — Intégration dans le workspace
 
-- [ ] `[SETUP]` Vérifier que `inference_ml` est bien dans le `[workspace]` racine
-- [ ] `[SETUP]` Documenter dans `inference_ml/README.md` : comment générer le modèle mock, comment lancer les tests, comment brancher sur `pipeline_dsp`
+- [x] `[SETUP]` Vérifier que `inference_ml` est bien dans le `[workspace]` racine
+- [x] `[SETUP]` Documenter dans `inference_ml/README.md` : comment générer le modèle mock, comment lancer les tests, comment brancher sur `pipeline_dsp`
 - [ ] `[TEST-I]` **Test d'intégration finale workspace :** Depuis un crate `integration_test` factice : simuler `pipeline_dsp → inference_ml` — envoyer des matrices MFCC synthétiques, vérifier que des scores sont reçus — sans erreur de compilation ni de runtime
 
 ---

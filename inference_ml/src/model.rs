@@ -5,16 +5,25 @@ use crate::config::InferenceConfig;
 use crate::error::InferenceError;
 use crate::ffi;
 
-/// Wrapper Rust autour du handle CoreML.
-/// Charge le modèle en mémoire et expose une méthode d'inférence synchrone.
-/// Thread-safe : Send + Sync sont sûrs car le handle est opaque et
-/// CoreML garantit la thread-safety pour les prédictions read-only.
+/// Wrapper Rust autour d'un handle `MLModel` Core ML.
+///
+/// Charge le modèle `.mlmodelc` en mémoire via le bridge Objective-C++
+/// et expose une méthode d'inférence synchrone.
+///
+/// # Thread-safety
+///
+/// `CoreMLModel` implémente `Send + Sync` car :
+/// - Le handle `MLModel *` Obj-C est un pointeur opaque géré par ARC.
+/// - Core ML garantit que `[MLModel predictionFromFeatures:error:]` est
+///   thread-safe en lecture (plusieurs threads peuvent appeler `infer`
+///   simultanément sur la même instance).
+/// - `coreml_free` n'est appelé qu'une seule fois depuis `Drop` —
+///   jamais depuis plusieurs threads simultanément.
 pub struct CoreMLModel {
     handle: ffi::CoreMLHandle,
 }
 
-// Le MLModel* ObjC est safe à envoyer entre threads et à utiliser en parallèle
-// (prédictions en lecture seule).
+// SAFETY : voir doc-comment ci-dessus.
 unsafe impl Send for CoreMLModel {}
 unsafe impl Sync for CoreMLModel {}
 
@@ -199,4 +208,3 @@ mod tests {
         assert_eq!(score, 0.5);
     }
 }
-

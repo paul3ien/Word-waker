@@ -57,5 +57,10 @@ fn bench_infer_cpu_only(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_infer_all_units, bench_infer_cpu_only, bench_infer_throughput);
+criterion_group!(
+    benches,
+    bench_infer_all_units,
+    bench_infer_cpu_only,
+    bench_infer_throughput
+);
 criterion_main!(benches);

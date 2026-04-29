@@ -19,6 +19,28 @@ impl InferenceEngine {
     /// Valide la config, charge le modèle CoreML et crée le runner.
     ///
     /// Retourne `Err` si la config est invalide ou si le chargement échoue.
+    ///
+    /// # Exemple
+    ///
+    /// ```no_run
+    /// use crossbeam_channel::bounded;
+    /// use inference_ml::{InferenceConfig, InferenceEngine};
+    ///
+    /// let config = InferenceConfig {
+    ///     model_path: "fixtures/mock_model/WakeWordMock.mlmodelc".into(),
+    ///     ..Default::default()
+    /// };
+    /// let mut engine = InferenceEngine::new(config).unwrap();
+    ///
+    /// let (tx_in, rx_in) = bounded::<[[f32; 13]; 98]>(8);
+    /// let (tx_out, rx_out) = bounded::<f32>(8);
+    /// engine.start(rx_in, tx_out).unwrap();
+    ///
+    /// tx_in.send([[0.0f32; 13]; 98]).unwrap();
+    /// let score = rx_out.recv().unwrap(); // ∈ [0.0, 1.0]
+    ///
+    /// engine.stop().unwrap();
+    /// ```
     pub fn new(config: InferenceConfig) -> Result<Self, InferenceError> {
         config.validate()?;
         let model = CoreMLModel::load(&config)?;

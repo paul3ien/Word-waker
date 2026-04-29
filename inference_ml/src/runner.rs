@@ -136,4 +136,3 @@ impl Drop for InferenceRunner {
         self.stop();
     }
 }
-

@@ -6,9 +6,9 @@
 //! Usage : cargo run --example instruments_loop -p inference_ml
 //! Puis : Instruments → Attach to process → `instruments_loop`
 
-use std::time::{Duration, Instant};
 use crossbeam_channel::bounded;
 use inference_ml::{InferenceConfig, InferenceEngine};
+use std::time::{Duration, Instant};
 
 fn main() {
     let model_path = format!(
@@ -16,7 +16,10 @@ fn main() {
         env!("CARGO_MANIFEST_DIR")
     );
 
-    let config = InferenceConfig { model_path, ..Default::default() };
+    let config = InferenceConfig {
+        model_path,
+        ..Default::default()
+    };
     let mut engine = InferenceEngine::new(config).expect("load échoué");
 
     let (tx_in, rx_in) = bounded::<[[f32; 13]; 98]>(32);
@@ -33,7 +36,9 @@ fn main() {
     while Instant::now() < deadline {
         let t0 = Instant::now();
         tx_in.send(mfcc).expect("send");
-        let _score = rx_out.recv_timeout(Duration::from_secs(1)).expect("timeout");
+        let _score = rx_out
+            .recv_timeout(Duration::from_secs(1))
+            .expect("timeout");
         sum_us += t0.elapsed().as_micros() as u64;
         count += 1;
     }

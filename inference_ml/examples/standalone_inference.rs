@@ -3,9 +3,9 @@
 //!
 //! Usage : cargo run --example standalone_inference --features standalone -p inference_ml
 
-use std::time::{Duration, Instant};
 use crossbeam_channel::bounded;
 use inference_ml::{InferenceConfig, InferenceEngine};
+use std::time::{Duration, Instant};
 
 fn main() {
     // Initialise le logger tracing pour voir les messages de debug du runner.
@@ -24,13 +24,14 @@ fn main() {
         ..Default::default()
     };
 
-    let mut engine = InferenceEngine::new(config)
-        .expect("Impossible de charger le modèle");
+    let mut engine = InferenceEngine::new(config).expect("Impossible de charger le modèle");
 
     let (tx_in, rx_in) = bounded::<[[f32; 13]; 98]>(16);
     let (tx_out, rx_out) = bounded::<f32>(16);
 
-    engine.start(rx_in, tx_out).expect("Impossible de démarrer le runner");
+    engine
+        .start(rx_in, tx_out)
+        .expect("Impossible de démarrer le runner");
 
     const N: usize = 10;
     let mut latencies = Vec::with_capacity(N);
@@ -52,7 +53,10 @@ fn main() {
         let latency = t0.elapsed();
 
         latencies.push(latency);
-        println!("  [{i:2}] score = {score:.4}  latence = {} µs", latency.as_micros());
+        println!(
+            "  [{i:2}] score = {score:.4}  latence = {} µs",
+            latency.as_micros()
+        );
     }
 
     drop(tx_in);
@@ -61,6 +65,10 @@ fn main() {
     // Calcule la latence médiane.
     latencies.sort_unstable();
     let median = latencies[N / 2];
-    println!("\nLatence médiane : {} µs ({} ms)", median.as_micros(), median.as_millis());
+    println!(
+        "\nLatence médiane : {} µs ({} ms)",
+        median.as_micros(),
+        median.as_millis()
+    );
     println!("Terminé proprement.");
 }

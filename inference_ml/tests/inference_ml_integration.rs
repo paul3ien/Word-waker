@@ -1,7 +1,7 @@
-use std::ffi::CString;
+use crossbeam_channel::bounded;
 use inference_ml::ffi;
 use inference_ml::{CoreMLModel, InferenceConfig, InferenceEngine, InferenceRunner};
-use crossbeam_channel::bounded;
+use std::ffi::CString;
 
 /// Chemin absolu vers le .mlmodelc compilé dans les fixtures du crate.
 fn mock_model_path() -> CString {
@@ -30,7 +30,10 @@ fn mock_config() -> InferenceConfig {
 fn bridge_load_mock_model_returns_non_null() {
     let cpath = mock_model_path();
     let handle = unsafe { ffi::coreml_load(cpath.as_ptr()) };
-    assert!(!handle.is_null(), "coreml_load devrait retourner un handle non-null");
+    assert!(
+        !handle.is_null(),
+        "coreml_load devrait retourner un handle non-null"
+    );
     // Libération propre
     unsafe { ffi::coreml_free(handle) };
 }
@@ -79,9 +82,7 @@ fn bridge_load_null_path_returns_null() {
 #[test]
 fn bridge_infer_null_handle_returns_zero() {
     let mfcc = vec![0.0f32; 1 * 98 * 13];
-    let score = unsafe {
-        ffi::coreml_infer(std::ptr::null_mut(), mfcc.as_ptr(), mfcc.len())
-    };
+    let score = unsafe { ffi::coreml_infer(std::ptr::null_mut(), mfcc.as_ptr(), mfcc.len()) };
     assert_eq!(score, 0.0f32, "coreml_infer(nullptr) doit retourner 0.0");
 }
 
@@ -186,7 +187,8 @@ fn runner_sends_5_scores_in_range() {
 
     let mut scores = Vec::new();
     for _ in 0..5 {
-        let score = rx_out.recv_timeout(std::time::Duration::from_secs(5))
+        let score = rx_out
+            .recv_timeout(std::time::Duration::from_secs(5))
             .expect("timeout en attente du score");
         scores.push(score);
     }
@@ -249,7 +251,8 @@ fn runner_100_inferences_no_memory_growth() {
 
     for _ in 0..100 {
         tx_in.send([[0.1f32; 13]; 98]).expect("send échoué");
-        let score = rx_out.recv_timeout(std::time::Duration::from_secs(5))
+        let score = rx_out
+            .recv_timeout(std::time::Duration::from_secs(5))
             .expect("timeout");
         assert!((0.0f32..=1.0f32).contains(&score));
     }
@@ -277,7 +280,8 @@ fn engine_new_start_infer_stop() {
 
     let mut scores = Vec::new();
     for _ in 0..3 {
-        let s = rx_out.recv_timeout(std::time::Duration::from_secs(5))
+        let s = rx_out
+            .recv_timeout(std::time::Duration::from_secs(5))
             .expect("timeout score");
         scores.push(s);
     }
@@ -372,6 +376,3 @@ fn runner_channel_closed_during_inference_terminates() {
     // Le thread doit être terminé ou en cours de terminaison.
     runner.stop();
 }
-
-
-
