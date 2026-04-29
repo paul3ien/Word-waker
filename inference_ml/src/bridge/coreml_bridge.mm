@@ -58,60 +58,73 @@ float coreml_infer(CoreMLHandle handle, const float* mfcc_flat, size_t len) {
 
     MLModel* model = (__bridge MLModel*)handle;
 
-    // Construit MLMultiArray [1, 98, 13] Double
-    // (le modèle NeuralNetwork compilé par coremltools utilise Double par défaut)
-    NSArray<NSNumber*>* shape = @[@1, @98, @13];
-    NSError* err = nil;
-    MLMultiArray* array = [[MLMultiArray alloc]
-                            initWithShape:shape
-                                 dataType:MLMultiArrayDataTypeDouble
-                                    error:&err];
-    if (err != nil || array == nil) {
-        const char* msg = err ? [err.localizedDescription UTF8String] : "array==nil";
-        fprintf(stderr, "[coreml_bridge] MLMultiArray alloc ECHEC — %s\n", msg);
-        return 0.0f;
-    }
+    // @autoreleasepool garantit que tous les objets ObjC créés dans cette
+    // inférence (MLMultiArray, MLFeatureValue, MLDictionaryFeatureProvider…)
+    // sont libérés avant de retourner à Rust.
+    // Sans ce bloc, les objets s'accumulent dans le pool du thread appelant
+    // et ne sont drainés qu'à la fin du run loop (jamais, pour un thread Rust).
+    float result = 0.0f;
+    @autoreleasepool {
+        // Construit MLMultiArray [1, 98, 13] Double
+        // (le modèle NeuralNetwork compilé par coremltools utilise Double par défaut)
+        NSArray<NSNumber*>* shape = @[@1, @98, @13];
+        NSError* err = nil;
+        MLMultiArray* array = [[MLMultiArray alloc]
+                                initWithShape:shape
+                                     dataType:MLMultiArrayDataTypeDouble
+                                        error:&err];
+        if (err != nil || array == nil) {
+            const char* msg = err ? [err.localizedDescription UTF8String] : "array==nil";
+            fprintf(stderr, "[coreml_bridge] MLMultiArray alloc ECHEC — %s\n", msg);
+            goto done; // libère le pool puis retourne 0.0f
+        }
 
-    // Convertit les float Rust en double pour CoreML
-    size_t expected = 1 * 98 * 13;
-    size_t copy_len = (len < expected) ? len : expected;
-    double* dst = (double*)array.dataPointer;
-    for (size_t i = 0; i < copy_len; ++i) {
-        dst[i] = (double)mfcc_flat[i];
-    }
+        {
+            // Convertit les float Rust en double pour CoreML
+            size_t expected = 1 * 98 * 13;
+            size_t copy_len = (len < expected) ? len : expected;
+            double* dst = (double*)array.dataPointer;
+            for (size_t i = 0; i < copy_len; ++i) {
+                dst[i] = (double)mfcc_flat[i];
+            }
 
-    // Construit le FeatureProvider
-    MLFeatureValue* fv      = [MLFeatureValue featureValueWithMultiArray:array];
-    NSDictionary*   dict    = @{@"mfcc_input": fv};
-    id<MLFeatureProvider> input =
-        [[MLDictionaryFeatureProvider alloc] initWithDictionary:dict error:&err];
-    if (err != nil || input == nil) {
-        const char* msg = err ? [err.localizedDescription UTF8String] : "input==nil";
-        fprintf(stderr, "[coreml_bridge] FeatureProvider ECHEC — %s\n", msg);
-        return 0.0f;
-    }
+            // Construit le FeatureProvider
+            MLFeatureValue* fv      = [MLFeatureValue featureValueWithMultiArray:array];
+            NSDictionary*   dict    = @{@"mfcc_input": fv};
+            id<MLFeatureProvider> input =
+                [[MLDictionaryFeatureProvider alloc] initWithDictionary:dict error:&err];
+            if (err != nil || input == nil) {
+                const char* msg = err ? [err.localizedDescription UTF8String] : "input==nil";
+                fprintf(stderr, "[coreml_bridge] FeatureProvider ECHEC — %s\n", msg);
+                goto done;
+            }
 
-    // Lance l'inférence
-    id<MLFeatureProvider> output = [model predictionFromFeatures:input error:&err];
-    if (err != nil || output == nil) {
-        const char* msg = err ? [err.localizedDescription UTF8String] : "output==nil";
-        fprintf(stderr, "[coreml_bridge] prediction ECHEC — %s\n", msg);
-        return 0.0f;
-    }
+            // Lance l'inférence
+            id<MLFeatureProvider> output = [model predictionFromFeatures:input error:&err];
+            if (err != nil || output == nil) {
+                const char* msg = err ? [err.localizedDescription UTF8String] : "output==nil";
+                fprintf(stderr, "[coreml_bridge] prediction ECHEC — %s\n", msg);
+                goto done;
+            }
 
-    // Récupère classLabel_probs[1] = score wake-word
-    MLFeatureValue* outFV = [output featureValueForName:@"classLabel_probs"];
-    if (outFV == nil) {
-        fprintf(stderr, "[coreml_bridge] 'classLabel_probs' absent des outputs\n");
-        return 0.0f;
-    }
-    MLMultiArray* probs = outFV.multiArrayValue;
-    if (probs == nil || probs.count < 2) {
-        fprintf(stderr, "[coreml_bridge] tableau de sortie invalide\n");
-        return 0.0f;
-    }
+            // Récupère classLabel_probs[1] = score wake-word
+            MLFeatureValue* outFV = [output featureValueForName:@"classLabel_probs"];
+            if (outFV == nil) {
+                fprintf(stderr, "[coreml_bridge] 'classLabel_probs' absent des outputs\n");
+                goto done;
+            }
+            MLMultiArray* probs = outFV.multiArrayValue;
+            if (probs == nil || probs.count < 2) {
+                fprintf(stderr, "[coreml_bridge] tableau de sortie invalide\n");
+                goto done;
+            }
 
-    return (float)[probs objectAtIndexedSubscript:1].doubleValue;
+            result = (float)[probs objectAtIndexedSubscript:1].doubleValue;
+        }
+        done:;
+    } // ← tous les objets ObjC libérés ici
+
+    return result;
 }
 
 // ─── coreml_load_cpu_only ─────────────────────────────────────────────────────

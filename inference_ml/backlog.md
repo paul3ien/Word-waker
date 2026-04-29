@@ -294,9 +294,9 @@
 
 ### P8.1 — Validation Instruments
 
-- [ ] `[VALID]` **Validation Instruments → Neural Engine :** Lancer `cargo run --example instruments_loop -p inference_ml` pendant 30 s — vérifier dans l'onglet "Neural Engine" qu'il y a de l'activité ANE non nulle *(binary créé : `examples/instruments_loop.rs`)*
-- [ ] `[VALID]` **Validation Instruments → CPU Profiler :** Confirmer que la consommation CPU du thread d'inférence est < 0,1 % en régime permanent
-- [ ] `[VALID]` **Validation Instruments → Allocations :** Vérifier que l'empreinte mémoire du modèle chargé est < 5 Mo
+- [x] `[VALID]` **Validation Instruments → Neural Engine :** Lancer `cargo run --example instruments_loop -p inference_ml` pendant 30 s — activité ANE confirmée (`Espresso::ANERuntimeEngine::batch` : 124 527 transients, 0 persistant) ✅
+- [x] `[VALID]` **Validation Instruments → CPU Profiler :** Confirmer que la consommation CPU du thread d'inférence est < 0,1 % en régime permanent
+- [x] `[VALID]` **Validation Instruments → Allocations :** Empreinte mémoire live **3.74 MiB** (< 5 Mo ✅) — fuite corrigée par `@autoreleasepool` dans `coreml_infer`
 
 ### P8.2 — Benchmarks
 
