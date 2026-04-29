@@ -95,7 +95,13 @@ mod tests {
         let samples: Vec<f32> = vec![0.0; 10_000];
         let frames = fr.push_samples(&samples);
         let expected = (10_000 - 400) / 160 + 1;
-        assert_eq!(frames.len(), expected, "attendu {} trames, obtenu {}", expected, frames.len());
+        assert_eq!(
+            frames.len(),
+            expected,
+            "attendu {} trames, obtenu {}",
+            expected,
+            frames.len()
+        );
     }
 
     #[test]
@@ -104,7 +110,13 @@ mod tests {
         let samples: Vec<f32> = vec![1.0; 5_000];
         let frames = fr.push_samples(&samples);
         for (i, f) in frames.iter().enumerate() {
-            assert_eq!(f.len(), 400, "trame {} a une taille incorrecte : {}", i, f.len());
+            assert_eq!(
+                f.len(),
+                400,
+                "trame {} a une taille incorrecte : {}",
+                i,
+                f.len()
+            );
         }
     }
 
@@ -114,7 +126,10 @@ mod tests {
         let mut fr = default_framer();
         let samples: Vec<f32> = (0..1000).map(|i| i as f32).collect();
         let frames = fr.push_samples(&samples);
-        assert!(frames.len() >= 2, "pas assez de trames pour tester l'overlap");
+        assert!(
+            frames.len() >= 2,
+            "pas assez de trames pour tester l'overlap"
+        );
         // trame 0 → samples [0..400], trame 1 → samples [160..560]
         // overlap = trame0[160..400] == trame1[0..240]
         assert_eq!(&frames[0][160..], &frames[1][..240]);

@@ -1,8 +1,8 @@
 //! Génère fixtures/reference_mfcc.json depuis Rust directement.
 //! Usage: cargo run --example generate_fixture --features standalone
 
-use std::fs;
 use pipeline_dsp::pipeline_dsp::{config::DspConfig, pipeline::DspPipeline};
+use std::fs;
 
 fn main() {
     let sample_rate = 16_000usize;
@@ -28,10 +28,14 @@ fn main() {
         mfcc_json.push('[');
         for (k, &v) in frame.iter().enumerate() {
             mfcc_json.push_str(&format!("{}", v));
-            if k < 12 { mfcc_json.push(','); }
+            if k < 12 {
+                mfcc_json.push(',');
+            }
         }
         mfcc_json.push(']');
-        if t < n_frames - 1 { mfcc_json.push(','); }
+        if t < n_frames - 1 {
+            mfcc_json.push(',');
+        }
     }
     mfcc_json.push(']');
 

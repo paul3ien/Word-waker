@@ -43,4 +43,3 @@ fn bench_pipeline_1s(c: &mut Criterion) {
 
 criterion_group!(benches, bench_frame_processor, bench_pipeline_1s);
 criterion_main!(benches);
-

@@ -82,7 +82,11 @@ impl MelFilterbank {
             }
         }
 
-        Self { matrix, n_mels, n_fft_bins }
+        Self {
+            matrix,
+            n_mels,
+            n_fft_bins,
+        }
     }
 
     /// Applique le filterbank sur `magnitudes` via `cblas_sgemv`.
@@ -107,14 +111,14 @@ impl MelFilterbank {
                 CBLAS_NO_TRANS,
                 self.n_mels as i32,
                 self.n_fft_bins as i32,
-                1.0,                       // alpha
+                1.0, // alpha
                 self.matrix.as_ptr(),
-                self.n_fft_bins as i32,    // lda
+                self.n_fft_bins as i32, // lda
                 magnitudes.as_ptr(),
-                1,                         // incx
-                0.0,                       // beta
+                1,   // incx
+                0.0, // beta
                 mel_energies.as_mut_ptr(),
-                1,                         // incy
+                1, // incy
             );
         }
         mel_energies

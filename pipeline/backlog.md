@@ -391,23 +391,23 @@
 
 ### P12.1 — Documentation
 
-- [ ] `[SETUP]` Ajouter des doc-comments `///` sur tous les types et fonctions publics
-- [ ] `[SETUP]` Écrire un doc-example dans `DspPipeline::new` montrant l'instanciation et un appel à `process_batch`
-- [ ] `[TEST-U]` **Test :** `cargo doc --no-deps -p pipeline_dsp` — sans erreur ni warning
+- [x] `[SETUP]` Ajouter des doc-comments `///` sur tous les types et fonctions publics
+- [x] `[SETUP]` Écrire un doc-example dans `DspPipeline::new` montrant l'instanciation et un appel à `process_batch`
+- [x] `[TEST-U]` **Test :** `cargo doc --no-deps -p pipeline_dsp` — sans erreur ni warning
 
 ### P12.2 — Validation finale
 
-- [ ] `[VALID]` `cargo clippy -p pipeline_dsp -- -D warnings` — zéro warning
-- [ ] `[VALID]` `cargo fmt --check -p pipeline_dsp` — code formaté
-- [ ] `[VALID]` `cargo test -p pipeline_dsp` — suite complète verte
-- [ ] `[VALID]` `cargo test -p pipeline_dsp --features mock_input` — suite mock verte
-- [ ] `[VALID]` `cargo build -p pipeline_dsp --release` — compile proprement
+- [x] `[VALID]` `cargo clippy -p pipeline_dsp -- -D warnings` — zéro warning
+- [x] `[VALID]` `cargo fmt --check -p pipeline_dsp` — code formaté
+- [x] `[VALID]` `cargo test -p pipeline_dsp` — suite complète verte
+- [x] `[VALID]` `cargo test -p pipeline_dsp --features mock_input` — suite mock verte
+- [x] `[VALID]` `cargo build -p pipeline_dsp --release` — compile proprement
 
 ### P12.3 — Intégration dans le workspace
 
-- [ ] `[SETUP]` Vérifier que `pipeline_dsp` est bien dans le `[workspace]` racine
-- [ ] `[SETUP]` Documenter dans `pipeline/README.md` : prérequis (Accelerate, Python/librosa pour les fixtures), comment générer `reference_mfcc.json`, comment lancer les tests, comment brancher le module sur `audio_capture`
-- [ ] `[TEST-I]` **Test d'intégration finale workspace :** Depuis un crate `integration_test` factice, brancher `audio_capture` (mode mock) → `pipeline_dsp` → vérifier que des matrices MFCC sont reçues côté consommateur — sans erreur de compilation ni de runtime
+- [x] `[SETUP]` Vérifier que `pipeline_dsp` est bien dans le `[workspace]` racine
+- [x] `[SETUP]` Documenter dans `pipeline/README.md` : prérequis (Accelerate, Python/librosa pour les fixtures), comment générer `reference_mfcc.json`, comment lancer les tests, comment brancher le module sur `audio_capture`
+- [x] `[TEST-I]` **Test d'intégration finale workspace :** Depuis un crate `integration_test` factice, brancher `audio_capture` (mode mock) → `pipeline_dsp` → vérifier que des matrices MFCC sont reçues côté consommateur — sans erreur de compilation ni de runtime
 
 ---
 

@@ -90,19 +90,30 @@ mod tests {
 
     #[test]
     fn non_power_of_two_fft_fails() {
-        let cfg = DspConfig { n_fft: 300, ..DspConfig::default() };
+        let cfg = DspConfig {
+            n_fft: 300,
+            ..DspConfig::default()
+        };
         assert!(cfg.validate().is_err());
     }
 
     #[test]
     fn n_mfcc_greater_than_n_mels_fails() {
-        let cfg = DspConfig { n_mfcc: 50, n_mels: 40, ..DspConfig::default() };
+        let cfg = DspConfig {
+            n_mfcc: 50,
+            n_mels: 40,
+            ..DspConfig::default()
+        };
         assert!(cfg.validate().is_err());
     }
 
     #[test]
     fn mel_fmax_above_nyquist_fails() {
-        let cfg = DspConfig { mel_fmax: 9000.0, sample_rate: 16_000.0, ..DspConfig::default() };
+        let cfg = DspConfig {
+            mel_fmax: 9000.0,
+            sample_rate: 16_000.0,
+            ..DspConfig::default()
+        };
         assert!(cfg.validate().is_err());
     }
 }

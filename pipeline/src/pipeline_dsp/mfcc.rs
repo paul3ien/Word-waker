@@ -65,9 +65,7 @@ impl VDspDct {
     /// Sélectionne automatiquement la prochaine taille valide pour vDSP si nécessaire.
     pub fn new(n: usize) -> Result<Self, DspError> {
         let n_padded = next_valid_dct_size(n);
-        let setup = unsafe {
-            vDSP_DCT_CreateSetup(std::ptr::null_mut(), n_padded, V_DSP_DCT_II)
-        };
+        let setup = unsafe { vDSP_DCT_CreateSetup(std::ptr::null_mut(), n_padded, V_DSP_DCT_II) };
         if setup.is_null() {
             return Err(DspError::DctSetupFailed);
         }
@@ -79,8 +77,20 @@ impl VDspDct {
     /// # Panics
     /// Panique si les longueurs ne correspondent pas à `n`.
     pub fn execute(&self, input: &[f32], output: &mut [f32]) {
-        assert_eq!(input.len(), self.n, "VDspDct::execute: input.len()={} != n={}", input.len(), self.n);
-        assert_eq!(output.len(), self.n, "VDspDct::execute: output.len()={} != n={}", output.len(), self.n);
+        assert_eq!(
+            input.len(),
+            self.n,
+            "VDspDct::execute: input.len()={} != n={}",
+            input.len(),
+            self.n
+        );
+        assert_eq!(
+            output.len(),
+            self.n,
+            "VDspDct::execute: output.len()={} != n={}",
+            output.len(),
+            self.n
+        );
 
         if self.n == self.n_padded {
             // Aucun padding nécessaire — appel direct.
@@ -182,7 +192,10 @@ mod tests {
     fn log_energy_zero_no_panic_no_inf() {
         let mut energies = vec![0.0f32];
         log_mel_energies(&mut energies);
-        assert!(energies[0].is_finite(), "ln de zéro doit rester fini (pas de -inf)");
+        assert!(
+            energies[0].is_finite(),
+            "ln de zéro doit rester fini (pas de -inf)"
+        );
         let expected = f32::EPSILON.ln();
         assert!(
             (energies[0] - expected).abs() < 1e-3,
@@ -245,7 +258,10 @@ mod tests {
     fn mfcc_extractor_new_default_succeeds() {
         let cfg = DspConfig::default();
         let ext = MfccExtractor::new(&cfg);
-        assert!(ext.is_ok(), "MfccExtractor::new doit réussir avec la config par défaut");
+        assert!(
+            ext.is_ok(),
+            "MfccExtractor::new doit réussir avec la config par défaut"
+        );
     }
 
     #[test]

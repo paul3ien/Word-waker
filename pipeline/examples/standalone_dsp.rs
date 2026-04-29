@@ -19,7 +19,10 @@ fn main() {
         .map(|i| (2.0 * std::f32::consts::PI * 440.0 * i as f32 / sample_rate as f32).sin())
         .collect();
 
-    println!("Signal : {} samples ({} s @ {} Hz)", n_samples, duration_s, sample_rate);
+    println!(
+        "Signal : {} samples ({} s @ {} Hz)",
+        n_samples, duration_s, sample_rate
+    );
 
     // --- Pipeline DSP ---
     let config = DspConfig::default();

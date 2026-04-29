@@ -14,7 +14,10 @@ pub struct PreEmphasis {
 impl PreEmphasis {
     /// Crée un nouveau filtre de pré-accentuation avec le coefficient `alpha`.
     pub fn new(alpha: f32) -> Self {
-        Self { alpha, last_sample: 0.0 }
+        Self {
+            alpha,
+            last_sample: 0.0,
+        }
     }
 
     /// Applique le filtre in-place sur `frame`.

@@ -21,7 +21,33 @@ pub struct DspPipeline {
 impl DspPipeline {
     /// Construit un `DspPipeline` à partir de la configuration DSP.
     ///
-    /// Valide la configuration et retourne `DspError` si elle est invalide.
+    /// Valide la configuration, initialise les setups FFT/DCT, pré-calcule la fenêtre
+    /// de Hann et la matrice de filtres Mel.
+    ///
+    /// # Errors
+    /// Retourne [`DspError::FftSetupFailed`] ou [`DspError::DctSetupFailed`] si
+    /// l'initialisation de l'Accelerate.framework échoue, ou un variant de validation
+    /// si la configuration contient des paramètres invalides.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use pipeline_dsp::pipeline_dsp::{config::DspConfig, pipeline::DspPipeline};
+    /// use std::f32::consts::PI;
+    ///
+    /// // Signal de test : sinus 440 Hz, 1 seconde à 16 kHz
+    /// let samples: Vec<f32> = (0..16_000)
+    ///     .map(|i| (2.0 * PI * 440.0 * i as f32 / 16_000.0).sin())
+    ///     .collect();
+    ///
+    /// let mut pipeline = DspPipeline::new(DspConfig::default()).unwrap();
+    /// let matrices = pipeline.process_batch(&samples);
+    ///
+    /// // ~98 trames → 1 matrice [[f32;13];98]
+    /// assert!(!matrices.is_empty());
+    /// assert_eq!(matrices[0].len(), 98);
+    /// assert_eq!(matrices[0][0].len(), 13);
+    /// ```
     pub fn new(config: DspConfig) -> Result<Self, DspError> {
         config.validate()?;
         Ok(Self {
@@ -64,7 +90,10 @@ mod tests {
     fn dsp_pipeline_new_default_succeeds() {
         let cfg = DspConfig::default();
         let p = DspPipeline::new(cfg);
-        assert!(p.is_ok(), "DspPipeline::new doit réussir avec la config par défaut");
+        assert!(
+            p.is_ok(),
+            "DspPipeline::new doit réussir avec la config par défaut"
+        );
     }
 
     #[test]

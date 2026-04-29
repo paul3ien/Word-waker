@@ -61,9 +61,14 @@ mod tests {
         vec![
             DspError::FftSetupFailed,
             DspError::DctSetupFailed,
-            DspError::InvalidFrameSize { expected: 400, got: 256 },
+            DspError::InvalidFrameSize {
+                expected: 400,
+                got: 256,
+            },
             DspError::InvalidSampleRate(0.0),
-            DspError::NumericalOverflow { step: "mel_filterbank" },
+            DspError::NumericalOverflow {
+                step: "mel_filterbank",
+            },
             DspError::ChannelClosed,
         ]
     }

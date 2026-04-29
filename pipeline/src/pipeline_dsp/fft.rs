@@ -32,7 +32,10 @@ impl VDspFft {
     /// # Errors
     /// Retourne `DspError::FftSetupFailed` si `vDSP_create_fftsetup` retourne NULL.
     pub fn new(n: usize) -> Result<Self, DspError> {
-        assert!(n.is_power_of_two() && n >= 4, "VDspFft: n doit être une puissance de 2 ≥ 4");
+        assert!(
+            n.is_power_of_two() && n >= 4,
+            "VDspFft: n doit être une puissance de 2 ≥ 4"
+        );
         let log2n = n.trailing_zeros();
         let setup = unsafe { vDSP_create_fftsetup(log2n as usize, K_FFT_RADIX2) };
         if setup.is_null() {

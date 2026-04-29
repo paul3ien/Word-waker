@@ -3,8 +3,8 @@
 use std::f32::consts::PI;
 
 use pipeline_dsp::pipeline_dsp::config::DspConfig;
-use pipeline_dsp::pipeline_dsp::fft::VDspFft;
 use pipeline_dsp::pipeline_dsp::ffi::DSPSplitComplex;
+use pipeline_dsp::pipeline_dsp::fft::VDspFft;
 use pipeline_dsp::pipeline_dsp::mel_filterbank::{hz_to_mel, mel_to_hz, MelFilterbank};
 use pipeline_dsp::pipeline_dsp::mfcc::log_mel_energies;
 use pipeline_dsp::pipeline_dsp::pipeline::DspPipeline;
@@ -24,13 +24,17 @@ fn regression_default_config_validates() {
 
 #[test]
 fn regression_hz_mel_bijection_multiple_values() {
-    let values = [100.0_f32, 440.0, 1000.0, 2000.0, 4000.0, 8000.0, 100.0, 300.0, 600.0, 1500.0];
+    let values = [
+        100.0_f32, 440.0, 1000.0, 2000.0, 4000.0, 8000.0, 100.0, 300.0, 600.0, 1500.0,
+    ];
     for hz in values {
         let roundtrip = mel_to_hz(hz_to_mel(hz));
         assert!(
             (roundtrip - hz).abs() / hz < 1e-4,
             "hz_to_mel/mel_to_hz roundtrip pour {}: {} (err={:.2e})",
-            hz, roundtrip, (roundtrip - hz).abs() / hz
+            hz,
+            roundtrip,
+            (roundtrip - hz).abs() / hz
         );
     }
 }
@@ -42,11 +46,13 @@ fn regression_hann_400_boundary_zero() {
     w.apply(&mut frame);
     assert!(
         frame[0].abs() < 1e-6,
-        "Hann 400 : w[0]={} (attendu 0)", frame[0]
+        "Hann 400 : w[0]={} (attendu 0)",
+        frame[0]
     );
     assert!(
         frame[399].abs() < 1e-6,
-        "Hann 400 : w[399]={} (attendu 0)", frame[399]
+        "Hann 400 : w[399]={} (attendu 0)",
+        frame[399]
     );
 }
 
@@ -61,10 +67,20 @@ fn regression_fft_silence_zero_magnitudes() {
 fn regression_fft_sine_peak_bin() {
     // 1000 Hz × 512 / 16000 = 32.0 → bin 32
     let fft = VDspFft::new(512).unwrap();
-    let frame: Vec<f32> = (0..400).map(|n| (2.0 * PI * 1000.0 * n as f32 / 16000.0).sin()).collect();
+    let frame: Vec<f32> = (0..400)
+        .map(|n| (2.0 * PI * 1000.0 * n as f32 / 16000.0).sin())
+        .collect();
     let mags = fft.forward(&frame);
-    let (peak_bin, _) = mags.iter().enumerate().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap();
-    assert!(peak_bin >= 31 && peak_bin <= 33, "pic attendu bin 32, obtenu {}", peak_bin);
+    let (peak_bin, _) = mags
+        .iter()
+        .enumerate()
+        .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+        .unwrap();
+    assert!(
+        peak_bin >= 31 && peak_bin <= 33,
+        "pic attendu bin 32, obtenu {}",
+        peak_bin
+    );
 }
 
 #[test]
@@ -122,7 +138,13 @@ fn numerical_hann_window_size5_known_values() {
     w.apply(&mut frame);
     let expected = [0.0_f32, 0.5, 1.0, 0.5, 0.0];
     for (i, (&got, &exp)) in frame.iter().zip(expected.iter()).enumerate() {
-        assert!((got - exp).abs() < 1e-6, "w[{}]={} (attendu {})", i, got, exp);
+        assert!(
+            (got - exp).abs() < 1e-6,
+            "w[{}]={} (attendu {})",
+            i,
+            got,
+            exp
+        );
     }
 }
 
@@ -142,8 +164,8 @@ fn numerical_mel_filterbank_non_negative_sum_positive() {
 #[cfg(not(feature = "skip_fixtures"))]
 #[test]
 fn numerical_mfcc_vs_reference_fixture() {
-    use std::fs;
     use serde_json::Value;
+    use std::fs;
 
     // Charger le fichier de référence
     let fixture_path = concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/reference_mfcc.json");
@@ -163,7 +185,10 @@ fn numerical_mfcc_vs_reference_fixture() {
     let cfg = DspConfig::default();
     let mut pipeline = DspPipeline::new(cfg).unwrap();
     let matrices = pipeline.process_batch(&samples);
-    assert!(!matrices.is_empty(), "Le pipeline n'a produit aucune matrice");
+    assert!(
+        !matrices.is_empty(),
+        "Le pipeline n'a produit aucune matrice"
+    );
 
     let first_matrix = &matrices[0];
     let n_compare = n_ref.min(98);
@@ -201,7 +226,11 @@ fn integration_regression_pipeline_3s_no_panic() {
         .collect();
     let matrices = pipeline.process_batch(&samples);
     // 3s × 100 frames/s = 300 frames → env. 202 matrices
-    assert!(matrices.len() >= 10, "attendu ≥ 10 matrices, obtenu {}", matrices.len());
+    assert!(
+        matrices.len() >= 10,
+        "attendu ≥ 10 matrices, obtenu {}",
+        matrices.len()
+    );
     for m in &matrices {
         for frame in m {
             for &v in frame {
@@ -239,14 +268,21 @@ fn integration_regression_two_instances_same_result() {
     let mut p2 = DspPipeline::new(cfg.clone()).unwrap();
     let m2 = p2.process_batch(&samples);
 
-    assert_eq!(m1.len(), m2.len(), "Les deux instances doivent produire le même nombre de matrices");
+    assert_eq!(
+        m1.len(),
+        m2.len(),
+        "Les deux instances doivent produire le même nombre de matrices"
+    );
     if !m1.is_empty() {
         for t in 0..98 {
             for k in 0..13 {
                 assert!(
                     (m1[0][t][k] - m2[0][t][k]).abs() < 0.035,
                     "Divergence hors tolérance vDSP à [{}][{}]: {} vs {} (max_tolérance=0.035)",
-                    t, k, m1[0][t][k], m2[0][t][k]
+                    t,
+                    k,
+                    m1[0][t][k],
+                    m2[0][t][k]
                 );
             }
         }
@@ -256,8 +292,8 @@ fn integration_regression_two_instances_same_result() {
 
 #[test]
 fn integration_regression_runner_receives_10_matrices() {
-    use std::time::{Duration, Instant};
     use crossbeam_channel::RecvTimeoutError;
+    use std::time::{Duration, Instant};
 
     let cfg = DspConfig::default();
     let (data_tx, data_rx) = crossbeam_channel::unbounded::<Vec<f32>>();
@@ -276,12 +312,76 @@ fn integration_regression_runner_receives_10_matrices() {
     let mut count = 0;
     while t0.elapsed() < Duration::from_millis(500) {
         match result_rx.recv_timeout(Duration::from_millis(50)) {
-            Ok(_) => { count += 1; }
+            Ok(_) => {
+                count += 1;
+            }
             Err(RecvTimeoutError::Disconnected) => break,
             Err(RecvTimeoutError::Timeout) => {}
         }
     }
 
-    assert!(count >= 10, "Runner: attendu ≥ 10 matrices en < 500ms, reçu {}", count);
+    assert!(
+        count >= 10,
+        "Runner: attendu ≥ 10 matrices en < 500ms, reçu {}",
+        count
+    );
 }
 
+// ---------------------------------------------------------------------------
+// P12.3 — Test d'intégration workspace : audio_capture (mock) → pipeline_dsp
+// ---------------------------------------------------------------------------
+
+/// Simule le scénario workspace complet :
+/// - Un producteur (audio_capture en mode mock) envoie des batches PCM
+/// - DspRunner reçoit, traite et transmet des matrices MFCC [[f32;13];98]
+/// - Un consommateur reçoit les matrices sans erreur de compilation ni runtime
+#[test]
+fn workspace_integration_mock_audio_capture_to_mfcc() {
+    use crossbeam_channel::unbounded;
+    use std::time::Duration;
+
+    // Canaux : audio_capture → pipeline_dsp → consommateur
+    let (audio_tx, audio_rx) = unbounded::<Vec<f32>>();
+    let (mfcc_tx, mfcc_rx) = unbounded::<[[f32; 13]; 98]>();
+
+    // Démarrer le runner DSP (simule la connexion avec audio_capture)
+    let mut runner = DspRunner::start(DspConfig::default(), audio_rx, mfcc_tx).unwrap();
+
+    // audio_capture (mock) : envoie 2 secondes de signal sinus 440 Hz
+    let mock_samples: Vec<f32> = (0..32_000)
+        .map(|i| (2.0 * PI * 440.0 * i as f32 / 16_000.0).sin())
+        .collect();
+    audio_tx.send(mock_samples).unwrap();
+    drop(audio_tx); // Simuler la fin du flux
+
+    // Consommateur : collecter toutes les matrices produites
+    let mut matrices_received = Vec::new();
+    loop {
+        match mfcc_rx.recv_timeout(Duration::from_millis(200)) {
+            Ok(matrix) => {
+                // Vérifier que chaque matrice a la bonne forme
+                assert_eq!(matrix.len(), 98, "Matrice doit avoir 98 trames");
+                assert_eq!(matrix[0].len(), 13, "Chaque trame doit avoir 13 MFCC");
+                // Vérifier que les valeurs sont finies (pas de NaN/Inf)
+                for frame in &matrix {
+                    for &coeff in frame {
+                        assert!(
+                            coeff.is_finite(),
+                            "Coefficient MFCC non-fini détecté : {}",
+                            coeff
+                        );
+                    }
+                }
+                matrices_received.push(matrix);
+            }
+            Err(_) => break,
+        }
+    }
+
+    runner.stop();
+
+    assert!(
+        !matrices_received.is_empty(),
+        "Aucune matrice MFCC reçue depuis le pipeline (mock audio_capture)"
+    );
+}

@@ -1,6 +1,6 @@
 //! Processeur de trame unique et accumulateur de trames MFCC.
 //!
-//! `FrameProcessor` : PreEmphasis → HannWindow → FFT → MelFilterbank → log_mel → DCT → [f32;13]
+//! `FrameProcessor` : PreEmphasis → HannWindow → FFT → MelFilterbank → log\_mel → DCT → \[f32;13\]
 //! `MfccAccumulator` : fenêtre glissante de 98 trames → matrice `[[f32;13];98]`
 
 use std::collections::VecDeque;
@@ -133,7 +133,10 @@ impl MfccAccumulator {
     /// # Panics
     /// Panique si `!is_ready()`.
     pub fn get_matrix(&self) -> [[f32; 13]; 98] {
-        assert!(self.is_ready(), "MfccAccumulator::get_matrix: pas encore prêt");
+        assert!(
+            self.is_ready(),
+            "MfccAccumulator::get_matrix: pas encore prêt"
+        );
         let mut matrix = [[0.0f32; 13]; 98];
         for (i, frame) in self.frames.iter().enumerate() {
             matrix[i] = *frame;
@@ -157,7 +160,10 @@ mod tests {
     fn frame_processor_new_default_succeeds() {
         let cfg = DspConfig::default();
         let fp = FrameProcessor::new(&cfg);
-        assert!(fp.is_ok(), "FrameProcessor::new doit réussir avec la config par défaut");
+        assert!(
+            fp.is_ok(),
+            "FrameProcessor::new doit réussir avec la config par défaut"
+        );
     }
 
     #[test]

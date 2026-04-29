@@ -158,12 +158,16 @@ mod tests {
             cblas_sgemv(
                 CBLAS_ROW_MAJOR,
                 CBLAS_NO_TRANS,
-                1, 1,
+                1,
+                1,
                 1.0,
-                a.as_ptr(), 1,
-                x.as_ptr(), 1,
+                a.as_ptr(),
+                1,
+                x.as_ptr(),
+                1,
                 0.0,
-                y.as_mut_ptr(), 1,
+                y.as_mut_ptr(),
+                1,
             );
         }
         assert!(
