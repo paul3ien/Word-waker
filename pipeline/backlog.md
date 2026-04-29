@@ -69,23 +69,23 @@
 
 ### P1.1 — Type d'erreur du module
 
-- [ ] `[IMPL]` Créer `src/pipeline_dsp/error.rs`
-- [ ] `[IMPL]` Définir l'enum `DspError` avec les variantes : `FftSetupFailed`, `DctSetupFailed`, `InvalidFrameSize { expected: usize, got: usize }`, `InvalidSampleRate(f64)`, `NumericalOverflow { step: &'static str }`, `ChannelClosed`
-- [ ] `[IMPL]` Implémenter `std::fmt::Display` pour `DspError`
-- [ ] `[IMPL]` Implémenter `std::error::Error` pour `DspError`
-- [ ] `[TEST-U]` **Test unitaire :** Chaque variante produit un message `Display` non vide et distinct
-- [ ] `[TEST-U]` **Test unitaire :** `DspError` est `Send + Sync`
+- [x] `[IMPL]` Créer `src/pipeline_dsp/error.rs`
+- [x] `[IMPL]` Définir l'enum `DspError` avec les variantes : `FftSetupFailed`, `DctSetupFailed`, `InvalidFrameSize { expected: usize, got: usize }`, `InvalidSampleRate(f64)`, `NumericalOverflow { step: &'static str }`, `ChannelClosed`
+- [x] `[IMPL]` Implémenter `std::fmt::Display` pour `DspError`
+- [x] `[IMPL]` Implémenter `std::error::Error` pour `DspError`
+- [x] `[TEST-U]` **Test unitaire :** Chaque variante produit un message `Display` non vide et distinct
+- [x] `[TEST-U]` **Test unitaire :** `DspError` est `Send + Sync`
 
 ### P1.2 — Configuration du pipeline DSP
 
-- [ ] `[IMPL]` Créer `src/pipeline_dsp/config.rs`
-- [ ] `[IMPL]` Définir la struct `DspConfig` avec les champs : `sample_rate: f64`, `frame_size: usize`, `hop_size: usize`, `n_fft: usize`, `n_mels: usize`, `n_mfcc: usize`, `alpha: f32`, `mel_fmin: f32`, `mel_fmax: f32`, `n_frames: usize`
-- [ ] `[IMPL]` Implémenter `Default` : `sample_rate=16000.0`, `frame_size=400`, `hop_size=160`, `n_fft=512`, `n_mels=40`, `n_mfcc=13`, `alpha=0.97`, `mel_fmin=20.0`, `mel_fmax=8000.0`, `n_frames=98`
-- [ ] `[IMPL]` Implémenter `validate(&self) -> Result<(), DspError>` : vérifier que `n_fft` est une puissance de 2, `n_fft >= frame_size`, `n_mfcc <= n_mels`, `mel_fmax <= sample_rate/2`
-- [ ] `[TEST-U]` **Test unitaire :** `DspConfig::default().validate()` retourne `Ok`
-- [ ] `[TEST-U]` **Test unitaire :** `n_fft = 300` (pas puissance de 2) → `validate()` retourne `Err`
-- [ ] `[TEST-U]` **Test unitaire :** `n_mfcc = 50`, `n_mels = 40` → `validate()` retourne `Err`
-- [ ] `[TEST-U]` **Test unitaire :** `mel_fmax = 9000.0`, `sample_rate = 16000.0` → `validate()` retourne `Err`
+- [x] `[IMPL]` Créer `src/pipeline_dsp/config.rs`
+- [x] `[IMPL]` Définir la struct `DspConfig` avec les champs : `sample_rate: f64`, `frame_size: usize`, `hop_size: usize`, `n_fft: usize`, `n_mels: usize`, `n_mfcc: usize`, `alpha: f32`, `mel_fmin: f32`, `mel_fmax: f32`, `n_frames: usize`
+- [x] `[IMPL]` Implémenter `Default` : `sample_rate=16000.0`, `frame_size=400`, `hop_size=160`, `n_fft=512`, `n_mels=40`, `n_mfcc=13`, `alpha=0.97`, `mel_fmin=20.0`, `mel_fmax=8000.0`, `n_frames=98`
+- [x] `[IMPL]` Implémenter `validate(&self) -> Result<(), DspError>` : vérifier que `n_fft` est une puissance de 2, `n_fft >= frame_size`, `n_mfcc <= n_mels`, `mel_fmax <= sample_rate/2`
+- [x] `[TEST-U]` **Test unitaire :** `DspConfig::default().validate()` retourne `Ok`
+- [x] `[TEST-U]` **Test unitaire :** `n_fft = 300` (pas puissance de 2) → `validate()` retourne `Err`
+- [x] `[TEST-U]` **Test unitaire :** `n_mfcc = 50`, `n_mels = 40` → `validate()` retourne `Err`
+- [x] `[TEST-U]` **Test unitaire :** `mel_fmax = 9000.0`, `sample_rate = 16000.0` → `validate()` retourne `Err`
 
 ---
 
