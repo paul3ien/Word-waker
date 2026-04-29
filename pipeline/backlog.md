@@ -128,19 +128,19 @@
 
 ### P3.1 — Implémentation
 
-- [ ] `[IMPL]` Créer `src/pipeline_dsp/preemphasis.rs`
-- [ ] `[IMPL]` Définir la struct `PreEmphasis { alpha: f32, last_sample: f32 }`
-- [ ] `[IMPL]` Implémenter `PreEmphasis::new(alpha: f32) -> Self`
-- [ ] `[IMPL]` Implémenter `apply(&mut self, frame: &mut [f32])` — traitement in-place, maintient `last_sample` entre les appels
-- [ ] `[IMPL]` Implémenter `reset(&mut self)` — remet `last_sample` à 0.0
+- [x] `[IMPL]` Créer `src/pipeline_dsp/preemphasis.rs`
+- [x] `[IMPL]` Définir la struct `PreEmphasis { alpha: f32, last_sample: f32 }`
+- [x] `[IMPL]` Implémenter `PreEmphasis::new(alpha: f32) -> Self`
+- [x] `[IMPL]` Implémenter `apply(&mut self, frame: &mut [f32])` — traitement in-place, maintient `last_sample` entre les appels
+- [x] `[IMPL]` Implémenter `reset(&mut self)` — remet `last_sample` à 0.0
 
 ### P3.2 — Tests
 
-- [ ] `[TEST-U]` **Test unitaire :** Signal constant [1.0, 1.0, 1.0] avec α=0.97 → vérifier les 3 premières sorties manuellement : `[1.0, 0.03, 0.03]`
-- [ ] `[TEST-U]` **Test unitaire :** Signal impulsion [1.0, 0.0, 0.0] → vérifier `[1.0, -0.97, 0.0]`
-- [ ] `[TEST-U]` **Test unitaire :** Signal silence [0.0, 0.0] → sortie [0.0, 0.0]
-- [ ] `[TEST-U]` **Test unitaire :** Vérifier que `last_sample` est bien propagé entre deux appels successifs à `apply` (continuité de traitement)
-- [ ] `[TEST-U]` **Test unitaire :** `reset()` remet `last_sample` à 0.0 — vérifier l'idempotence
+- [x] `[TEST-U]` **Test unitaire :** Signal constant [1.0, 1.0, 1.0] avec α=0.97 → vérifier les 3 premières sorties manuellement : `[1.0, 0.03, 0.03]`
+- [x] `[TEST-U]` **Test unitaire :** Signal impulsion [1.0, 0.0, 0.0] → vérifier `[1.0, -0.97, 0.0]`
+- [x] `[TEST-U]` **Test unitaire :** Signal silence [0.0, 0.0] → sortie [0.0, 0.0]
+- [x] `[TEST-U]` **Test unitaire :** Vérifier que `last_sample` est bien propagé entre deux appels successifs à `apply` (continuité de traitement)
+- [x] `[TEST-U]` **Test unitaire :** `reset()` remet `last_sample` à 0.0 — vérifier l'idempotence
 - [ ] `[TEST-N]` **Validation numérique :** Comparer la sortie sur le signal de référence avec `librosa.effects.preemphasis` — erreur max < 1e-5
 
 ---

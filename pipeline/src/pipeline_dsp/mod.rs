@@ -6,5 +6,7 @@ pub mod error;
 pub mod config;
 /// Bindings FFI Accelerate (vDSP, BLAS, DCT).
 pub mod ffi;
+/// Filtre de pré-accentuation IIR du premier ordre.
+pub mod preemphasis;
 
 pub use error::DspError;
