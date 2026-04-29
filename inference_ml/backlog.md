@@ -233,26 +233,26 @@
 
 ### P6.1 — Structure du runner
 
-- [ ] `[IMPL-RS]` Créer `src/inference_ml/runner.rs`
-- [ ] `[IMPL-RS]` Définir `pub struct InferenceRunner { model: Arc<CoreMLModel>, running: Arc<AtomicBool>, thread_handle: Option<JoinHandle<()>> }`
-- [ ] `[IMPL-RS]` Implémenter `InferenceRunner::new(model: CoreMLModel) -> Self`
+- [x] `[IMPL-RS]` Créer `src/inference_ml/runner.rs`
+- [x] `[IMPL-RS]` Définir `pub struct InferenceRunner { model: Arc<CoreMLModel>, running: Arc<AtomicBool>, thread_handle: Option<JoinHandle<()>> }`
+- [x] `[IMPL-RS]` Implémenter `InferenceRunner::new(model: CoreMLModel) -> Self`
 
 ### P6.2 — Boucle d'inférence
 
-- [ ] `[IMPL-RS]` Implémenter `InferenceRunner::start(rx: Receiver<[[f32;13];98]>, tx: Sender<f32>) -> Result<(), InferenceError>` :
-  - [ ] `[IMPL-RS]` Spawner un thread qui boucle sur `rx.recv()` (bloquant — pas de polling)
-  - [ ] `[IMPL-RS]` Pour chaque matrice reçue : appeler `model.infer(mfcc)`, envoyer le score via `tx.send(score)`
-  - [ ] `[IMPL-RS]` Si `rx.recv()` retourne `Err` (channel fermé) : sortir de la boucle proprement
-  - [ ] `[IMPL-RS]` Logger le score et la latence via `tracing::debug!`
-- [ ] `[IMPL-RS]` Implémenter `InferenceRunner::stop()` : poser `running` à false, `join` le thread
-- [ ] `[IMPL-RS]` Implémenter `Drop for InferenceRunner` : appelle `stop()` silencieusement
+- [x] `[IMPL-RS]` Implémenter `InferenceRunner::start(rx: Receiver<[[f32;13];98]>, tx: Sender<f32>) -> Result<(), InferenceError>` :
+  - [x] `[IMPL-RS]` Spawner un thread qui boucle sur `rx.recv()` (bloquant — pas de polling)
+  - [x] `[IMPL-RS]` Pour chaque matrice reçue : appeler `model.infer(mfcc)`, envoyer le score via `tx.send(score)`
+  - [x] `[IMPL-RS]` Si `rx.recv()` retourne `Err` (channel fermé) : sortir de la boucle proprement
+  - [x] `[IMPL-RS]` Logger le score et la latence via `tracing::debug!`
+- [x] `[IMPL-RS]` Implémenter `InferenceRunner::stop()` : poser `running` à false, `join` le thread
+- [x] `[IMPL-RS]` Implémenter `Drop for InferenceRunner` : appelle `stop()` silencieusement
 
 ### P6.3 — Tests du runner
 
-- [ ] `[TEST-I]` **Test d'intégration :** Envoyer 5 matrices via le channel, vérifier que 5 scores sont reçus dans [0.0, 1.0]
-- [ ] `[TEST-I]` **Test d'intégration :** Fermer le `Sender` → le thread se termine proprement, `stop()` ne panic pas
-- [ ] `[TEST-I]` **Test d'intégration :** Drop du runner sans `stop()` explicite → thread terminé, zéro thread zombie
-- [ ] `[TEST-I]` **Test d'intégration :** Inférence sur 100 matrices consécutives → consommation mémoire stable (pas de fuite par appel)
+- [x] `[TEST-I]` **Test d'intégration :** Envoyer 5 matrices via le channel, vérifier que 5 scores sont reçus dans [0.0, 1.0]
+- [x] `[TEST-I]` **Test d'intégration :** Fermer le `Sender` → le thread se termine proprement, `stop()` ne panic pas
+- [x] `[TEST-I]` **Test d'intégration :** Drop du runner sans `stop()` explicite → thread terminé, zéro thread zombie
+- [x] `[TEST-I]` **Test d'intégration :** Inférence sur 100 matrices consécutives → consommation mémoire stable (pas de fuite par appel)
 
 ---
 

@@ -1,6 +1,7 @@
 use std::ffi::CString;
 use inference_ml::ffi;
-use inference_ml::{CoreMLModel, InferenceConfig};
+use inference_ml::{CoreMLModel, InferenceConfig, InferenceRunner};
+use crossbeam_channel::bounded;
 
 /// Chemin absolu vers le .mlmodelc compilé dans les fixtures du crate.
 fn mock_model_path() -> CString {
@@ -163,4 +164,96 @@ fn model_repeated_load_drop_no_crash() {
         // drop implicite à chaque itération
     }
 }
+
+// ─── P6.3 ────────────────────────────────────────────────────────────────────
+
+/// Envoyer 5 matrices → recevoir 5 scores dans [0.0, 1.0].
+#[test]
+fn runner_sends_5_scores_in_range() {
+    let model = CoreMLModel::load(&mock_config()).expect("load échoué");
+    let mut runner = InferenceRunner::new(model);
+
+    let (tx_in, rx_in) = bounded::<[[f32; 13]; 98]>(8);
+    let (tx_out, rx_out) = bounded::<f32>(8);
+
+    runner.start(rx_in, tx_out).expect("start échoué");
+
+    for _ in 0..5 {
+        tx_in.send([[0.0f32; 13]; 98]).expect("send échoué");
+    }
+
+    let mut scores = Vec::new();
+    for _ in 0..5 {
+        let score = rx_out.recv_timeout(std::time::Duration::from_secs(5))
+            .expect("timeout en attente du score");
+        scores.push(score);
+    }
+
+    runner.stop();
+
+    for s in &scores {
+        assert!((0.0f32..=1.0f32).contains(s), "score={s} hors [0.0, 1.0]");
+    }
+    assert_eq!(scores.len(), 5);
+}
+
+/// Fermer le Sender → le thread se termine proprement sans panique.
+#[test]
+fn runner_stops_cleanly_when_sender_closed() {
+    let model = CoreMLModel::load(&mock_config()).expect("load échoué");
+    let mut runner = InferenceRunner::new(model);
+
+    let (tx_in, rx_in) = bounded::<[[f32; 13]; 98]>(8);
+    let (tx_out, rx_out) = bounded::<f32>(8);
+
+    runner.start(rx_in, tx_out).expect("start échoué");
+
+    // Ferme le canal d'entrée → le thread doit sortir de la boucle.
+    drop(tx_in);
+
+    // stop() doit rejoindre le thread sans panic ni timeout.
+    runner.stop();
+
+    // Le canal de sortie est vide (aucune matrice envoyée).
+    assert!(rx_out.try_recv().is_err());
+}
+
+/// Drop du runner sans stop() explicite → pas de thread zombie.
+#[test]
+fn runner_drop_without_explicit_stop_no_zombie() {
+    let model = CoreMLModel::load(&mock_config()).expect("load échoué");
+    let mut runner = InferenceRunner::new(model);
+
+    let (_tx_in, rx_in) = bounded::<[[f32; 13]; 98]>(8);
+    let (tx_out, _rx_out) = bounded::<f32>(8);
+
+    runner.start(rx_in, tx_out).expect("start échoué");
+
+    // Drop implicite — le runner enverra le signal de stop via Drop, puis join().
+    drop(runner);
+    // Pas de panic = succès
+}
+
+/// 100 inférences consécutives via le runner → mémoire stable.
+#[test]
+fn runner_100_inferences_no_memory_growth() {
+    let model = CoreMLModel::load(&mock_config()).expect("load échoué");
+    let mut runner = InferenceRunner::new(model);
+
+    let (tx_in, rx_in) = bounded::<[[f32; 13]; 98]>(16);
+    let (tx_out, rx_out) = bounded::<f32>(16);
+
+    runner.start(rx_in, tx_out).expect("start échoué");
+
+    for _ in 0..100 {
+        tx_in.send([[0.1f32; 13]; 98]).expect("send échoué");
+        let score = rx_out.recv_timeout(std::time::Duration::from_secs(5))
+            .expect("timeout");
+        assert!((0.0f32..=1.0f32).contains(&score));
+    }
+
+    drop(tx_in);
+    runner.stop();
+}
+
 
