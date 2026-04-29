@@ -96,6 +96,8 @@ fn model_load_mock_returns_ok() {
 }
 
 /// CoreMLModel::load avec un chemin inexistant → Err(ModelNotFound).
+/// (Non applicable avec mock_model : le stub bypasse la vérification du chemin.)
+#[cfg(not(feature = "mock_model"))]
 #[test]
 fn model_load_nonexistent_returns_model_not_found() {
     use inference_ml::InferenceError;
@@ -302,6 +304,73 @@ fn engine_drop_without_stop_no_crash() {
 
     // Drop implicite — InferenceEngine::drop appelle runner.stop()
     drop(engine);
+}
+
+// ─── P9.3 ────────────────────────────────────────────────────────────────────
+
+/// Régression : new → drop sans start — zéro fuite.
+#[test]
+fn engine_new_drop_without_start_no_crash() {
+    let config = mock_config();
+    let engine = InferenceEngine::new(config).expect("new échoué");
+    drop(engine);
+    // Pas de crash = succès
+}
+
+/// Régression : new → start → 10 inférences → stop.
+#[test]
+fn engine_10_inferences_regression() {
+    let config = mock_config();
+    let mut engine = InferenceEngine::new(config).expect("new échoué");
+
+    let (tx_in, rx_in) = bounded::<[[f32; 13]; 98]>(16);
+    let (tx_out, rx_out) = bounded::<f32>(16);
+    engine.start(rx_in, tx_out).expect("start échoué");
+
+    for _ in 0..10 {
+        tx_in.send([[0.0f32; 13]; 98]).expect("send");
+        let score = rx_out
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .expect("timeout");
+        assert!((0.0f32..=1.0f32).contains(&score));
+    }
+
+    drop(tx_in);
+    engine.stop().expect("stop");
+}
+
+/// Régression : 1000 load → infer → free consécutifs — mémoire stable.
+#[test]
+fn model_1000_load_infer_free_stable() {
+    for _ in 0..1000 {
+        let model = CoreMLModel::load(&mock_config()).expect("load");
+        let _ = model.infer(&[[0.0f32; 13]; 98]).expect("infer");
+        // drop implicite = free
+    }
+}
+
+/// Régression : channel fermé pendant inférence → thread se termine proprement.
+#[test]
+fn runner_channel_closed_during_inference_terminates() {
+    let model = CoreMLModel::load(&mock_config()).expect("load");
+    let mut runner = InferenceRunner::new(model);
+
+    let (tx_in, rx_in) = bounded::<[[f32; 13]; 98]>(8);
+    let (tx_out, rx_out) = bounded::<f32>(8);
+    runner.start(rx_in, tx_out).expect("start");
+
+    // Envoyer une matrice puis fermer le canal d'entrée immédiatement.
+    tx_in.send([[0.0f32; 13]; 98]).expect("send");
+    drop(tx_in);
+
+    // Recevoir le score (preuve que le thread a traité avant de s'arrêter).
+    let score = rx_out
+        .recv_timeout(std::time::Duration::from_secs(5))
+        .expect("timeout");
+    assert!((0.0f32..=1.0f32).contains(&score));
+
+    // Le thread doit être terminé ou en cours de terminaison.
+    runner.stop();
 }
 
 

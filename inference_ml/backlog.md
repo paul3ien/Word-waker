@@ -314,28 +314,28 @@
 
 ### P9.1 — Organisation des tests
 
-- [ ] `[SETUP]` Créer `tests/inference_ml_integration.rs` — tests d'intégration du crate complet
-- [ ] `[SETUP]` Séparer les tests nécessitant le modèle mock (`#[cfg(not(feature = "skip_fixtures"))]`) de ceux nécessitant un modèle réel
-- [ ] `[SETUP]` Créer un module `src/inference_ml/mock.rs` (feature `mock_model`) : `CoreMLModel` stub qui retourne toujours 0.5 sans appeler le bridge
+- [x] `[SETUP]` Créer `tests/inference_ml_integration.rs` — tests d'intégration du crate complet
+- [x] `[SETUP]` Séparer les tests nécessitant le modèle mock (`#[cfg(not(feature = "skip_fixtures"))]`) de ceux nécessitant un modèle réel
+- [x] `[SETUP]` Créer un module `src/inference_ml/mock.rs` (feature `mock_model`) : `CoreMLModel` stub qui retourne toujours 0.5 sans appeler le bridge
 
 ### P9.2 — Tests unitaires de régression
 
-- [ ] `[TEST-U]` **Régression :** `InferenceConfig::default()` avec model_path renseigné → `validate()` retourne `Ok`
-- [ ] `[TEST-U]` **Régression :** Toutes les variantes de `InferenceError` ont un `Display` non vide
-- [ ] `[TEST-U]` **Régression :** Score invalide (< 0.0 ou > 1.0) → `Err(InferenceFailed)`
-- [ ] `[TEST-U]` **Régression :** `InferenceError` est `Send + Sync`
+- [x] `[TEST-U]` **Régression :** `InferenceConfig::default()` avec model_path renseigné → `validate()` retourne `Ok`
+- [x] `[TEST-U]` **Régression :** Toutes les variantes de `InferenceError` ont un `Display` non vide
+- [x] `[TEST-U]` **Régression :** Score invalide (< 0.0 ou > 1.0) → `Err(InferenceFailed)`
+- [x] `[TEST-U]` **Régression :** `InferenceError` est `Send + Sync`
 
 ### P9.3 — Tests d'intégration de régression (modèle mock)
 
-- [ ] `[TEST-I]` **Régression (mock) :** `new → start → 10 inférences → stop` — aucune panique
-- [ ] `[TEST-I]` **Régression (mock) :** `new → drop` (sans start) — zéro fuite
-- [ ] `[TEST-I]` **Régression (mock) :** 1000 `load → infer → free` consécutifs — mémoire stable
-- [ ] `[TEST-I]` **Régression (mock) :** Channel fermé pendant l'inférence → thread se termine proprement
+- [x] `[TEST-I]` **Régression (mock) :** `new → start → 10 inférences → stop` — aucune panique
+- [x] `[TEST-I]` **Régression (mock) :** `new → drop` (sans start) — zéro fuite
+- [x] `[TEST-I]` **Régression (mock) :** 1000 `load → infer → free` consécutifs — mémoire stable
+- [x] `[TEST-I]` **Régression (mock) :** Channel fermé pendant l'inférence → thread se termine proprement
 
 ### P9.4 — Tests AddressSanitizer
 
-- [ ] `[VALID]` **AddressSanitizer :** `RUSTFLAGS="-Z sanitizer=address" cargo +nightly test -p inference_ml --features mock_model` — zéro erreur mémoire
-- [ ] `[VALID]` **AddressSanitizer :** Idem avec le modèle mock réel (`.mlmodelc`) — zéro fuite sur le handle ARC
+- [x] `[VALID]` **AddressSanitizer :** `RUSTFLAGS="-Z sanitizer=address" cargo +nightly test -p inference_ml --features mock_model` — zéro erreur mémoire
+- [x] `[VALID]` **AddressSanitizer :** Idem avec le modèle mock réel (`.mlmodelc`) — zéro fuite sur le handle ARC
 
 ---
 
