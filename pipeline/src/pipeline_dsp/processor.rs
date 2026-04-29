@@ -26,6 +26,8 @@ use crate::pipeline_dsp::windowing::HannWindow;
 /// 4. Filtres Mel (`MelFilterbank`)
 /// 5. Logarithme naturel (`log_mel_energies`)
 /// 6. DCT-II → 13 coefficients MFCC (`MfccExtractor`)
+///
+/// Tous les buffers intermédiaires sont pré-alloués dans `new` — zéro allocation en régime permanent.
 pub struct FrameProcessor {
     preemphasis: PreEmphasis,
     window: HannWindow,
@@ -34,8 +36,9 @@ pub struct FrameProcessor {
     mfcc: MfccExtractor,
     /// Taille d'une trame en échantillons.
     frame_size: usize,
-    /// Taille de la FFT (n_fft ≥ frame_size, zéro-paddé si nécessaire).
-    n_fft: usize,
+    // Buffers pré-alloués — réutilisés à chaque appel de process_frame()
+    buf_magnitudes: Vec<f32>,
+    buf_mel: Vec<f32>,
 }
 
 impl FrameProcessor {
@@ -48,13 +51,15 @@ impl FrameProcessor {
             mel: MelFilterbank::new(config),
             mfcc: MfccExtractor::new(config)?,
             frame_size: config.frame_size,
-            n_fft: config.n_fft,
+            buf_magnitudes: vec![0.0f32; config.n_fft / 2],
+            buf_mel: vec![0.0f32; config.n_mels],
         })
     }
 
     /// Traite une trame audio et retourne 13 coefficients MFCC.
     ///
     /// La trame est modifiée in-place (pré-accentuation, fenêtrage).
+    /// Zéro allocation — tous les buffers intermédiaires sont pré-alloués dans `new`.
     ///
     /// # Panics
     /// Panique si `frame.len() != frame_size`.
@@ -73,23 +78,17 @@ impl FrameProcessor {
         // 2. Fenêtrage de Hann
         self.window.apply(frame);
 
-        // 3. Zero-padding si frame_size < n_fft, puis FFT → magnitudes
-        let magnitudes = if self.frame_size == self.n_fft {
-            self.fft.forward(frame)
-        } else {
-            let mut padded = vec![0.0f32; self.n_fft];
-            padded[..self.frame_size].copy_from_slice(frame);
-            self.fft.forward(&padded)
-        };
+        // 3. FFT → magnitudes (zéro allocation via forward_into)
+        self.fft.forward_into(frame, &mut self.buf_magnitudes);
 
-        // 4. Filtres Mel
-        let mut mel_energies = self.mel.apply(&magnitudes);
+        // 4. Filtres Mel (zéro allocation via apply_into)
+        self.mel.apply_into(&self.buf_magnitudes, &mut self.buf_mel);
 
         // 5. Logarithme naturel in-place
-        log_mel_energies(&mut mel_energies);
+        log_mel_energies(&mut self.buf_mel);
 
-        // 6. DCT-II → 13 MFCC
-        self.mfcc.extract(&mel_energies)
+        // 6. DCT-II → 13 MFCC (zéro allocation)
+        self.mfcc.extract(&self.buf_mel)
     }
 }
 

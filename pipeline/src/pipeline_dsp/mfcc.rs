@@ -74,6 +74,9 @@ impl VDspDct {
 
     /// Exécute la DCT-II sur `input` (longueur `n`) et écrit le résultat dans `output` (longueur `n`).
     ///
+    /// Alloue des buffers temporaires si n != n_padded. Préférer `execute_with_bufs` pour
+    /// zéro allocation en régime permanent.
+    ///
     /// # Panics
     /// Panique si les longueurs ne correspondent pas à `n`.
     pub fn execute(&self, input: &[f32], output: &mut [f32]) {
@@ -93,12 +96,10 @@ impl VDspDct {
         );
 
         if self.n == self.n_padded {
-            // Aucun padding nécessaire — appel direct.
             unsafe {
                 vDSP_DCT_Execute(self.setup, input.as_ptr(), output.as_mut_ptr());
             }
         } else {
-            // Zero-padding transparent vers la prochaine taille vDSP valide.
             let mut padded_in = vec![0.0f32; self.n_padded];
             padded_in[..self.n].copy_from_slice(input);
             let mut padded_out = vec![0.0f32; self.n_padded];
@@ -108,48 +109,101 @@ impl VDspDct {
             output.copy_from_slice(&padded_out[..self.n]);
         }
     }
+
+    /// Exécute la DCT-II sans aucune allocation — buffers temporaires fournis par l'appelant.
+    ///
+    /// `tmp_in` et `tmp_out` doivent avoir une longueur ≥ `n_padded`.
+    ///
+    /// # Panics
+    /// Panique si `input.len() != n` ou `output.len() != n`.
+    pub fn execute_with_bufs(
+        &self,
+        input: &[f32],
+        output: &mut [f32],
+        tmp_in: &mut [f32],
+        tmp_out: &mut [f32],
+    ) {
+        assert_eq!(input.len(), self.n);
+        assert_eq!(output.len(), self.n);
+
+        if self.n == self.n_padded {
+            unsafe {
+                vDSP_DCT_Execute(self.setup, input.as_ptr(), output.as_mut_ptr());
+            }
+        } else {
+            debug_assert!(tmp_in.len() >= self.n_padded);
+            debug_assert!(tmp_out.len() >= self.n_padded);
+            tmp_in[..self.n].copy_from_slice(input);
+            tmp_in[self.n..self.n_padded].fill(0.0);
+            unsafe {
+                vDSP_DCT_Execute(self.setup, tmp_in.as_ptr(), tmp_out.as_mut_ptr());
+            }
+            output.copy_from_slice(&tmp_out[..self.n]);
+        }
+    }
 }
 
 impl Drop for VDspDct {
     fn drop(&mut self) {
         // Note : Apple ne documente pas de fonction `vDSP_DCT_DestroySetup` dans l'API publique.
-        // Les setups DCT sont des sous-types de DFT setups ; la destruction via
-        // `vDSP_DFT_DestroySetup` est fonctionnellement correcte mais non documentée
-        // officiellement. La fuite mémoire unitaire est négligeable (< 1 KB par setup).
-        // À revisiter via Instruments / Leaks si nécessaire.
+        // Les setups DCT sont des sous-types de DFT setups ; la fuite mémoire unitaire est
+        // négligeable (< 1 KB par setup). À revisiter via Instruments / Leaks si nécessaire.
         let _ = self.setup;
     }
 }
 
-// ---------------------------------------------------------------------------
-// P8.3 — Extraction MFCC
-// ---------------------------------------------------------------------------
-
 /// Extrait les `n_mfcc` premiers coefficients MFCC à partir des log-énergies Mel via DCT-II.
+///
+/// Tous les buffers intermédiaires sont pré-alloués dans `new` pour zéro allocation en régime permanent.
 pub struct MfccExtractor {
     dct: VDspDct,
     /// Nombre de coefficients MFCC à retourner (≤ 13).
     n_mfcc: usize,
     /// Dimension du vecteur log-Mel en entrée (= n_mels).
     n_mels: usize,
+    // Buffers pré-alloués pour execute_with_bufs
+    buf_dct_out: Vec<f32>,
+    buf_dct_tmp_in: Vec<f32>,
+    buf_dct_tmp_out: Vec<f32>,
 }
 
 impl MfccExtractor {
     /// Construit un `MfccExtractor` à partir de la configuration DSP.
     pub fn new(config: &DspConfig) -> Result<Self, DspError> {
+        let n_padded = {
+            // Recalculer n_padded pour dimensionner les buffers tmp
+            let n = config.n_mels;
+            const FACTORS: [usize; 4] = [1, 3, 5, 15];
+            let mut best = usize::MAX;
+            for &f in &FACTORS {
+                let mut size = f * 16;
+                while size < n {
+                    size *= 2;
+                }
+                if size < best {
+                    best = size;
+                }
+            }
+            best
+        };
         let dct = VDspDct::new(config.n_mels)?;
         Ok(Self {
             dct,
             n_mfcc: config.n_mfcc,
             n_mels: config.n_mels,
+            buf_dct_out: vec![0.0f32; config.n_mels],
+            buf_dct_tmp_in: vec![0.0f32; n_padded],
+            buf_dct_tmp_out: vec![0.0f32; n_padded],
         })
     }
 
     /// Exécute la DCT-II sur `log_mel` et retourne les 13 premiers coefficients MFCC.
     ///
+    /// Zéro allocation — utilise les buffers pré-alloués dans `new`.
+    ///
     /// # Panics
     /// Panique si `log_mel.len() != n_mels`.
-    pub fn extract(&self, log_mel: &[f32]) -> [f32; 13] {
+    pub fn extract(&mut self, log_mel: &[f32]) -> [f32; 13] {
         assert_eq!(
             log_mel.len(),
             self.n_mels,
@@ -157,11 +211,15 @@ impl MfccExtractor {
             log_mel.len(),
             self.n_mels
         );
-        let mut dct_output = vec![0.0f32; self.n_mels];
-        self.dct.execute(log_mel, &mut dct_output);
+        self.dct.execute_with_bufs(
+            log_mel,
+            &mut self.buf_dct_out,
+            &mut self.buf_dct_tmp_in,
+            &mut self.buf_dct_tmp_out,
+        );
         let mut mfcc = [0.0f32; 13];
         let n = self.n_mfcc.min(13).min(self.n_mels);
-        mfcc[..n].copy_from_slice(&dct_output[..n]);
+        mfcc[..n].copy_from_slice(&self.buf_dct_out[..n]);
         mfcc
     }
 }
@@ -270,7 +328,7 @@ mod tests {
         // X[0] = somme des éléments non-nuls = 40·c  (la composante DC).
         // Les coefficients k>0 doivent être d'amplitude plus faible que X[0].
         let cfg = DspConfig::default(); // n_mels=40, n_mfcc=13
-        let ext = MfccExtractor::new(&cfg).unwrap();
+        let mut ext = MfccExtractor::new(&cfg).unwrap();
         let log_mel = vec![1.0f32; 40];
         let mfcc = ext.extract(&log_mel);
 

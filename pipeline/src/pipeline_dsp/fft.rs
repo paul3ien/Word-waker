@@ -13,17 +13,24 @@ use crate::pipeline_dsp::ffi::{
 /// Wrapper sûr autour du plan FFT vDSP.
 ///
 /// Calcule le spectre de magnitude d'un signal réel en `n_fft / 2` bins.
+/// Tous les buffers intermédiaires sont pré-alloués dans `new` pour zéro allocation en régime permanent.
 pub struct VDspFft {
     setup: *mut c_void,
     /// Taille de la FFT (puissance de 2).
     pub n: usize,
     /// log₂(n) — paramètre attendu par vDSP.
     log2n: u32,
+    // Buffers pré-alloués — réutilisés à chaque appel de forward()
+    buf_padded: Vec<f32>,
+    buf_real: Vec<f32>,
+    buf_imag: Vec<f32>,
+    buf_power: Vec<f32>,
 }
 
 /// # Safety
-/// `vDSP_fft_zrip` est thread-safe en lecture (chaque appel `forward` utilise
-/// des buffers locaux ; seul le `setup` est partagé en lecture seule).
+/// `VDspFft` contient un pointeur `setup` opaque et des buffers de travail.
+/// L'envoi entre threads est sûr car chaque instance possède ses propres buffers
+/// et `vDSP_fft_zrip` est réentrant avec des setups différents.
 unsafe impl Send for VDspFft {}
 
 impl VDspFft {
@@ -41,40 +48,46 @@ impl VDspFft {
         if setup.is_null() {
             return Err(DspError::FftSetupFailed);
         }
-        Ok(Self { setup, n, log2n })
+        let half = n / 2;
+        Ok(Self {
+            setup,
+            n,
+            log2n,
+            buf_padded: vec![0.0f32; n],
+            buf_real: vec![0.0f32; half],
+            buf_imag: vec![0.0f32; half],
+            buf_power: vec![0.0f32; half],
+        })
     }
 
-    /// Calcule le spectre de magnitude du `frame` et retourne `n / 2` valeurs.
+    /// Calcule le spectre de magnitude du `frame` et écrit `n / 2` magnitudes dans `out`.
     ///
     /// Si `frame.len() < n`, le signal est zero-paddé. Si `frame.len() > n`,
     /// seuls les `n` premiers samples sont utilisés.
     ///
-    /// # Valeur de retour
-    /// Vecteur de `n / 2` magnitudes (non normalisées).
-    pub fn forward(&self, frame: &[f32]) -> Vec<f32> {
+    /// Aucune allocation dynamique — tous les buffers intermédiaires sont pré-alloués dans `new`.
+    pub fn forward_into(&mut self, frame: &[f32], out: &mut [f32]) {
         let n = self.n;
         let half = n / 2;
+        debug_assert_eq!(out.len(), half);
 
-        // 1. Zero-pad (ou tronquer) le signal à n_fft samples.
-        let mut padded = vec![0.0f32; n];
+        // 1. Zero-pad dans le buffer pré-alloué.
         let copy_len = frame.len().min(n);
-        padded[..copy_len].copy_from_slice(&frame[..copy_len]);
+        self.buf_padded[..copy_len].copy_from_slice(&frame[..copy_len]);
+        self.buf_padded[copy_len..].fill(0.0);
 
-        // 2. Désentrelacer en split-complex : even → realp, odd → imagp.
-        //    vDSP_fft_zrip attend N/2 paires complexes pour une FFT réelle de taille N.
-        let mut real_buf = vec![0.0f32; half];
-        let mut imag_buf = vec![0.0f32; half];
+        // 2. Désentrelacer : even → realp, odd → imagp.
         for i in 0..half {
-            real_buf[i] = padded[2 * i];
-            imag_buf[i] = padded[2 * i + 1];
+            self.buf_real[i] = self.buf_padded[2 * i];
+            self.buf_imag[i] = self.buf_padded[2 * i + 1];
         }
 
         let mut split = DSPSplitComplex {
-            realp: real_buf.as_mut_ptr(),
-            imagp: imag_buf.as_mut_ptr(),
+            realp: self.buf_real.as_mut_ptr(),
+            imagp: self.buf_imag.as_mut_ptr(),
         };
 
-        // 3. Calculer la FFT in-place (résultat dans split).
+        // 3. FFT in-place.
         unsafe {
             vDSP_fft_zrip(
                 self.setup,
@@ -85,20 +98,21 @@ impl VDspFft {
             );
         }
 
-        // 4. Calculer la puissance spectrale |X[k]|² = realp[k]² + imagp[k]².
-        let mut power = vec![0.0f32; half];
+        // 4. Puissance spectrale → buf_power.
         unsafe {
             vDSP_zvmags(
                 &split as *const DSPSplitComplex,
                 1,
-                power.as_mut_ptr(),
+                self.buf_power.as_mut_ptr(),
                 1,
                 half,
             );
         }
 
-        // 5. Retourner les magnitudes (racine de la puissance).
-        power.iter().map(|p| p.sqrt()).collect()
+        // 5. Racine carrée → out.
+        for (o, &p) in out.iter_mut().zip(self.buf_power.iter()) {
+            *o = p.sqrt();
+        }
     }
 }
 
@@ -124,17 +138,19 @@ mod tests {
 
     #[test]
     fn output_length_is_n_over_2() {
-        let fft = VDspFft::new(512).unwrap();
+        let mut fft = VDspFft::new(512).unwrap();
         let frame = vec![0.0f32; 400];
-        let mags = fft.forward(&frame);
+        let mut mags = vec![0.0f32; 256];
+        fft.forward_into(&frame, &mut mags);
         assert_eq!(mags.len(), 256, "attendu 256 bins, obtenu {}", mags.len());
     }
 
     #[test]
     fn silence_gives_zero_magnitudes() {
-        let fft = VDspFft::new(512).unwrap();
+        let mut fft = VDspFft::new(512).unwrap();
         let frame = vec![0.0f32; 400];
-        let mags = fft.forward(&frame);
+        let mut mags = vec![0.0f32; 256];
+        fft.forward_into(&frame, &mut mags);
         for (k, &m) in mags.iter().enumerate() {
             assert!(m < 1e-10, "mags[{}] = {} (attendu ≈ 0)", k, m);
         }
@@ -151,8 +167,9 @@ mod tests {
             .map(|n| (2.0 * PI * 1000.0 * n as f32 / sample_rate as f32).sin())
             .collect();
 
-        let fft = VDspFft::new(n_fft).unwrap();
-        let mags = fft.forward(&frame);
+        let mut fft = VDspFft::new(n_fft).unwrap();
+        let mut mags = vec![0.0f32; n_fft / 2];
+        fft.forward_into(&frame, &mut mags);
 
         // Chercher le bin à l'énergie maximale
         let (peak_bin, peak_val) = mags

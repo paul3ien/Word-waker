@@ -58,19 +58,21 @@ fn regression_hann_400_boundary_zero() {
 
 #[test]
 fn regression_fft_silence_zero_magnitudes() {
-    let fft = VDspFft::new(512).unwrap();
-    let mags = fft.forward(&vec![0.0f32; 400]);
+    let mut fft = VDspFft::new(512).unwrap();
+    let mut mags = vec![0.0f32; 256];
+    fft.forward_into(&vec![0.0f32; 400], &mut mags);
     assert!(mags.iter().all(|&m| m < 1e-10));
 }
 
 #[test]
 fn regression_fft_sine_peak_bin() {
     // 1000 Hz × 512 / 16000 = 32.0 → bin 32
-    let fft = VDspFft::new(512).unwrap();
+    let mut fft = VDspFft::new(512).unwrap();
     let frame: Vec<f32> = (0..400)
         .map(|n| (2.0 * PI * 1000.0 * n as f32 / 16000.0).sin())
         .collect();
-    let mags = fft.forward(&frame);
+    let mut mags = vec![0.0f32; 256];
+    fft.forward_into(&frame, &mut mags);
     let (peak_bin, _) = mags
         .iter()
         .enumerate()

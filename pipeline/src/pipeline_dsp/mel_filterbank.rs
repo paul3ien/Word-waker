@@ -96,14 +96,32 @@ impl MelFilterbank {
     /// # Panics
     /// Panique si `magnitudes.len() != n_fft_bins`.
     pub fn apply(&self, magnitudes: &[f32]) -> Vec<f32> {
+        let mut out = vec![0.0f32; self.n_mels];
+        self.apply_into(magnitudes, &mut out);
+        out
+    }
+
+    /// Applique le filterbank sur `magnitudes` et écrit les `n_mels` énergies Mel dans `out`.
+    ///
+    /// Zéro allocation — `out` doit avoir une longueur de `n_mels`.
+    ///
+    /// # Panics
+    /// Panique si `magnitudes.len() != n_fft_bins` ou `out.len() != n_mels`.
+    pub fn apply_into(&self, magnitudes: &[f32], out: &mut [f32]) {
         assert_eq!(
             magnitudes.len(),
             self.n_fft_bins,
-            "MelFilterbank::apply: magnitudes.len()={} != n_fft_bins={}",
+            "MelFilterbank::apply_into: magnitudes.len()={} != n_fft_bins={}",
             magnitudes.len(),
             self.n_fft_bins
         );
-        let mut mel_energies = vec![0.0f32; self.n_mels];
+        assert_eq!(
+            out.len(),
+            self.n_mels,
+            "MelFilterbank::apply_into: out.len()={} != n_mels={}",
+            out.len(),
+            self.n_mels
+        );
         // y = 1.0 · matrix · magnitudes + 0.0 · y
         unsafe {
             cblas_sgemv(
@@ -117,11 +135,10 @@ impl MelFilterbank {
                 magnitudes.as_ptr(),
                 1,   // incx
                 0.0, // beta
-                mel_energies.as_mut_ptr(),
+                out.as_mut_ptr(),
                 1, // incy
             );
         }
-        mel_energies
     }
 }
 
