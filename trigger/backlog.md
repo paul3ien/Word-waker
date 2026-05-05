@@ -102,8 +102,8 @@
 
 ### P2.1 — Structure et constructeur
 
-- [ ] `[IMPL]` Créer `src/trigger/engine.rs`
-- [ ] `[IMPL]` Définir la struct `TriggerEngine` :
+- [x] `[IMPL]` Créer `src/trigger/engine.rs`
+- [x] `[IMPL]` Définir la struct `TriggerEngine` :
   ```
   history: VecDeque<f32>
   window_size: usize
@@ -112,58 +112,58 @@
   cooldown_ms: u64
   last_trigger: Instant
   ```
-- [ ] `[IMPL]` Implémenter `TriggerEngine::new(config: &TriggerConfig) -> Self` — initialise avec `VecDeque::with_capacity(window_size)` et `last_trigger = Instant::now() - Duration::from_millis(cooldown_ms + 1)` (cooldown déjà écoulé au démarrage)
+- [x] `[IMPL]` Implémenter `TriggerEngine::new(config: &TriggerConfig) -> Self` — initialise avec `VecDeque::with_capacity(window_size)` et `last_trigger = Instant::now() - Duration::from_millis(cooldown_ms + 1)` (cooldown déjà écoulé au démarrage)
 
 ### P2.2 — Méthode principale `push`
 
-- [ ] `[IMPL]` Implémenter `TriggerEngine::push(&mut self, score: f32) -> bool` :
-  - [ ] `[IMPL]` Ajouter `score` à `history`
-  - [ ] `[IMPL]` Si `history.len() > window_size` : supprimer le plus ancien (`pop_front`)
-  - [ ] `[IMPL]` Vérifier le cooldown : si `last_trigger.elapsed().as_millis() < cooldown_ms as u128` → retourner `false` immédiatement
-  - [ ] `[IMPL]` Compter les votes positifs : `history.iter().filter(|&&s| s > score_threshold).count()`
-  - [ ] `[IMPL]` Si `votes >= vote_threshold` : poser `last_trigger = Instant::now()`, appeler `history.clear()`, retourner `true`
-  - [ ] `[IMPL]` Sinon : retourner `false`
+- [x] `[IMPL]` Implémenter `TriggerEngine::push(&mut self, score: f32) -> bool` :
+  - [x] `[IMPL]` Ajouter `score` à `history`
+  - [x] `[IMPL]` Si `history.len() > window_size` : supprimer le plus ancien (`pop_front`)
+  - [x] `[IMPL]` Vérifier le cooldown : si `last_trigger.elapsed().as_millis() < cooldown_ms as u128` → retourner `false` immédiatement
+  - [x] `[IMPL]` Compter les votes positifs : `history.iter().filter(|&&s| s > score_threshold).count()`
+  - [x] `[IMPL]` Si `votes >= vote_threshold` : poser `last_trigger = Instant::now()`, appeler `history.clear()`, retourner `true`
+  - [x] `[IMPL]` Sinon : retourner `false`
 
 ### P2.3 — Méthodes utilitaires
 
-- [ ] `[IMPL]` Implémenter `TriggerEngine::reset(&mut self)` — vide `history`, remet `last_trigger` à `Instant::now() - Duration::from_millis(cooldown_ms + 1)`
-- [ ] `[IMPL]` Implémenter `TriggerEngine::pending_votes(&self) -> usize` — compte les votes positifs courants dans la fenêtre
-- [ ] `[IMPL]` Implémenter `TriggerEngine::history_len(&self) -> usize` — retourne `history.len()`
-- [ ] `[IMPL]` Implémenter `TriggerEngine::cooldown_remaining_ms(&self) -> u64` — retourne le temps restant avant la fin du cooldown (0 si expiré)
+- [x] `[IMPL]` Implémenter `TriggerEngine::reset(&mut self)` — vide `history`, remet `last_trigger` à `Instant::now() - Duration::from_millis(cooldown_ms + 1)`
+- [x] `[IMPL]` Implémenter `TriggerEngine::pending_votes(&self) -> usize` — compte les votes positifs courants dans la fenêtre
+- [x] `[IMPL]` Implémenter `TriggerEngine::history_len(&self) -> usize` — retourne `history.len()`
+- [x] `[IMPL]` Implémenter `TriggerEngine::cooldown_remaining_ms(&self) -> u64` — retourne le temps restant avant la fin du cooldown (0 si expiré)
 
 ### P2.4 — Tests du moteur de vote
 
 #### Cas nominaux
 
-- [ ] `[TEST-U]` **Détection nominale :** Pousser 3 scores > 0.80 en 5 appels → `push` retourne `true` au 3e vote positif
-- [ ] `[TEST-U]` **Pas de détection :** Pousser 2 scores > 0.80 et 3 < 0.80 → jamais `true`
-- [ ] `[TEST-U]` **Seuil exact :** Score = 0.80 exactement → ne compte **pas** comme vote positif (filtre strict `>`)
-- [ ] `[TEST-U]` **Seuil dépassé :** Score = 0.801 → compte comme vote positif
+- [x] `[TEST-U]` **Détection nominale :** Pousser 3 scores > 0.80 en 5 appels → `push` retourne `true` au 3e vote positif
+- [x] `[TEST-U]` **Pas de détection :** Pousser 2 scores > 0.80 et 3 < 0.80 → jamais `true`
+- [x] `[TEST-U]` **Seuil exact :** Score = 0.80 exactement → ne compte **pas** comme vote positif (filtre strict `>`)
+- [x] `[TEST-U]` **Seuil dépassé :** Score = 0.801 → compte comme vote positif
 
 #### Fenêtre glissante
 
-- [ ] `[TEST-U]` **Glissement :** Remplir 5 scores positifs, ajouter un 6e score → vérifier que `history_len()` reste ≤ 5
-- [ ] `[TEST-U]` **Éviction :** Pousser [0.9, 0.9, 0.9, 0.1, 0.1] (3 positifs → détection), puis immédiatement [0.9, 0.9, 0.9] → cooldown empêche le second déclenchement
-- [ ] `[TEST-U]` **Fenêtre vide :** Moteur neuf → `push(0.9)` × 1 → pas de détection (1 vote < 3 requis)
+- [x] `[TEST-U]` **Glissement :** Remplir 5 scores positifs, ajouter un 6e score → vérifier que `history_len()` reste ≤ 5
+- [x] `[TEST-U]` **Éviction :** Pousser [0.9, 0.9, 0.9, 0.1, 0.1] (3 positifs → détection), puis immédiatement [0.9, 0.9, 0.9] → cooldown empêche le second déclenchement
+- [x] `[TEST-U]` **Fenêtre vide :** Moteur neuf → `push(0.9)` × 1 → pas de détection (1 vote < 3 requis)
 
 #### Cooldown
 
-- [ ] `[TEST-U]` **Cooldown actif :** Détection → immédiatement pousser 3 scores > 0.80 → `false` (cooldown non expiré)
-- [ ] `[TEST-U]` **Cooldown expiré :** Après initialisation avec cooldown déjà écoulé → première détection possible immédiatement
-- [ ] `[TEST-U]` **`cooldown_remaining_ms` :** Juste après détection → valeur ≈ `cooldown_ms` (±50 ms)
-- [ ] `[TEST-U]` **`cooldown_remaining_ms` :** Bien avant toute détection → 0
+- [x] `[TEST-U]` **Cooldown actif :** Détection → immédiatement pousser 3 scores > 0.80 → `false` (cooldown non expiré)
+- [x] `[TEST-U]` **Cooldown expiré :** Après initialisation avec cooldown déjà écoulé → première détection possible immédiatement
+- [x] `[TEST-U]` **`cooldown_remaining_ms` :** Juste après détection → valeur ≈ `cooldown_ms` (±50 ms)
+- [x] `[TEST-U]` **`cooldown_remaining_ms` :** Bien avant toute détection → 0
 
 #### Comportement post-détection
 
-- [ ] `[TEST-U]` **Clear après détection :** Après `true`, `history_len()` == 0
-- [ ] `[TEST-U]` **Reset :** Après `reset()`, `pending_votes()` == 0 et `history_len()` == 0
-- [ ] `[TEST-U]` **Détection après reset :** `reset()` puis 3 scores > 0.80 → détection possible
+- [x] `[TEST-U]` **Clear après détection :** Après `true`, `history_len()` == 0
+- [x] `[TEST-U]` **Reset :** Après `reset()`, `pending_votes()` == 0 et `history_len()` == 0
+- [x] `[TEST-U]` **Détection après reset :** `reset()` puis 3 scores > 0.80 → détection possible
 
 #### Configurations limites
 
-- [ ] `[TEST-U]` **window_size = 1, vote_threshold = 1 :** Un seul score > 0.80 → détection immédiate
-- [ ] `[TEST-U]` **vote_threshold = window_size :** Tous les scores de la fenêtre doivent être positifs
-- [ ] `[TEST-U]` **score_threshold = 0.99 :** Seuls les scores très proches de 1.0 comptent
+- [x] `[TEST-U]` **window_size = 1, vote_threshold = 1 :** Un seul score > 0.80 → détection immédiate
+- [x] `[TEST-U]` **vote_threshold = window_size :** Tous les scores de la fenêtre doivent être positifs
+- [x] `[TEST-U]` **score_threshold = 0.99 :** Seuls les scores très proches de 1.0 comptent
 
 ---
 

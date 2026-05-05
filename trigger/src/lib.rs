@@ -1,3 +1,3 @@
 pub mod trigger;
 
-pub use trigger::{TriggerConfig, TriggerError};
+pub use trigger::{TriggerConfig, TriggerEngine, TriggerError};
