@@ -57,39 +57,39 @@
 
 ### P1.1 — Type d'erreur du module
 
-- [ ] `[IMPL]` Créer `src/trigger/error.rs`
-- [ ] `[IMPL]` Définir l'enum `TriggerError` avec les variantes :
+- [x] `[IMPL]` Créer `src/trigger/error.rs`
+- [x] `[IMPL]` Définir l'enum `TriggerError` avec les variantes :
   - `ChannelClosed` — le `Receiver<f32>` a été fermé
   - `IpcSendFailed(String)` — échec d'écriture sur le socket
   - `SocketBindFailed(String)` — échec de création du socket (mode serveur)
   - `InvalidConfig(String)` — paramètres incohérents
-- [ ] `[IMPL]` Implémenter `std::fmt::Display` pour `TriggerError`
-- [ ] `[IMPL]` Implémenter `std::error::Error` pour `TriggerError`
-- [ ] `[TEST-U]` **Test unitaire :** Chaque variante produit un message `Display` non vide et distinct
-- [ ] `[TEST-U]` **Test unitaire :** `TriggerError` est `Send + Sync`
+- [x] `[IMPL]` Implémenter `std::fmt::Display` pour `TriggerError`
+- [x] `[IMPL]` Implémenter `std::error::Error` pour `TriggerError`
+- [x] `[TEST-U]` **Test unitaire :** Chaque variante produit un message `Display` non vide et distinct
+- [x] `[TEST-U]` **Test unitaire :** `TriggerError` est `Send + Sync`
 
 ### P1.2 — Configuration
 
-- [ ] `[IMPL]` Créer `src/trigger/config.rs`
-- [ ] `[IMPL]` Définir la struct `TriggerConfig` avec les champs :
+- [x] `[IMPL]` Créer `src/trigger/config.rs`
+- [x] `[IMPL]` Définir la struct `TriggerConfig` avec les champs :
   - `score_threshold: f32` — seuil par score individuel
   - `vote_threshold: usize` — nombre de votes positifs requis dans la fenêtre
   - `window_size: usize` — taille de la fenêtre glissante (en nombre d'inférences)
   - `cooldown_ms: u64` — délai minimal entre deux détections
   - `socket_path: String` — chemin du socket IPC
-- [ ] `[IMPL]` Implémenter `Default` : `score_threshold=0.80`, `vote_threshold=3`, `window_size=5`, `cooldown_ms=2000`, `socket_path="/tmp/wakeword_daemon.sock".to_string()`
-- [ ] `[IMPL]` Implémenter `validate(&self) -> Result<(), TriggerError>` :
+- [x] `[IMPL]` Implémenter `Default` : `score_threshold=0.80`, `vote_threshold=3`, `window_size=5`, `cooldown_ms=2000`, `socket_path="/tmp/wakeword_daemon.sock".to_string()`
+- [x] `[IMPL]` Implémenter `validate(&self) -> Result<(), TriggerError>` :
   - `score_threshold` dans `(0.0, 1.0]`
   - `vote_threshold` ≤ `window_size`
   - `window_size` > 0
   - `cooldown_ms` > 0
   - `socket_path` non vide
-- [ ] `[TEST-U]` **Test unitaire :** `TriggerConfig::default().validate()` → `Ok`
-- [ ] `[TEST-U]` **Test unitaire :** `vote_threshold = 6`, `window_size = 5` → `validate()` → `Err(InvalidConfig)`
-- [ ] `[TEST-U]` **Test unitaire :** `score_threshold = 0.0` → `Err(InvalidConfig)`
-- [ ] `[TEST-U]` **Test unitaire :** `score_threshold = 1.5` → `Err(InvalidConfig)`
-- [ ] `[TEST-U]` **Test unitaire :** `window_size = 0` → `Err(InvalidConfig)`
-- [ ] `[TEST-U]` **Test unitaire :** `socket_path = ""` → `Err(InvalidConfig)`
+- [x] `[TEST-U]` **Test unitaire :** `TriggerConfig::default().validate()` → `Ok`
+- [x] `[TEST-U]` **Test unitaire :** `vote_threshold = 6`, `window_size = 5` → `validate()` → `Err(InvalidConfig)`
+- [x] `[TEST-U]` **Test unitaire :** `score_threshold = 0.0` → `Err(InvalidConfig)`
+- [x] `[TEST-U]` **Test unitaire :** `score_threshold = 1.5` → `Err(InvalidConfig)`
+- [x] `[TEST-U]` **Test unitaire :** `window_size = 0` → `Err(InvalidConfig)`
+- [x] `[TEST-U]` **Test unitaire :** `socket_path = ""` → `Err(InvalidConfig)`
 
 ---
 
