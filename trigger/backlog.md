@@ -296,32 +296,32 @@
 
 ### P7.1 — Organisation des tests
 
-- [ ] `[SETUP]` Créer `tests/trigger_integration.rs` — tests d'intégration du crate complet
-- [ ] `[SETUP]` Utiliser des paths de socket uniques par test (`/tmp/wakeword_test_{uuid}.sock`) pour éviter les conflits entre tests parallèles
-- [ ] `[SETUP]` Nettoyer les fichiers socket dans `teardown` de chaque test (`std::fs::remove_file`)
+- [x] `[SETUP]` Créer `tests/trigger_integration.rs` — tests d'intégration du crate complet
+- [x] `[SETUP]` Utiliser des paths de socket uniques par test (`/tmp/wakeword_test_{uuid}.sock`) pour éviter les conflits entre tests parallèles
+- [x] `[SETUP]` Nettoyer les fichiers socket dans `teardown` de chaque test (`std::fs::remove_file`)
 
 ### P7.2 — Tests unitaires de régression
 
-- [ ] `[TEST-U]` **Régression :** `TriggerConfig::default().validate()` → `Ok`
-- [ ] `[TEST-U]` **Régression :** Toutes les variantes de `TriggerError` ont un `Display` non vide
-- [ ] `[TEST-U]` **Régression :** 3 votes positifs sur 5 → détection (configuration nominale)
-- [ ] `[TEST-U]` **Régression :** 2 votes positifs sur 5 → pas de détection
-- [ ] `[TEST-U]` **Régression :** Cooldown bloque le second déclenchement immédiat
-- [ ] `[TEST-U]` **Régression :** `history.clear()` après détection
-- [ ] `[TEST-U]` **Régression :** `reset()` remet l'état à zéro
+- [x] `[TEST-U]` **Régression :** `TriggerConfig::default().validate()` → `Ok`
+- [x] `[TEST-U]` **Régression :** Toutes les variantes de `TriggerError` ont un `Display` non vide
+- [x] `[TEST-U]` **Régression :** 3 votes positifs sur 5 → détection (configuration nominale)
+- [x] `[TEST-U]` **Régression :** 2 votes positifs sur 5 → pas de détection
+- [x] `[TEST-U]` **Régression :** Cooldown bloque le second déclenchement immédiat
+- [x] `[TEST-U]` **Régression :** `history.clear()` après détection
+- [x] `[TEST-U]` **Régression :** `reset()` remet l'état à zéro
 
 ### P7.3 — Tests d'intégration de régression
 
-- [ ] `[TEST-I]` **Régression :** `notify()` sans client → `Ok` (silence gracieux)
-- [ ] `[TEST-I]` **Régression :** `notify()` avec client → message `"WAKEWORD_DETECTED\n"` reçu
-- [ ] `[TEST-I]` **Régression :** Thread runner → fermeture channel → terminaison propre
-- [ ] `[TEST-I]` **Régression :** Drop sans stop → zéro thread zombie
-- [ ] `[TEST-I]` **Régression :** Deux détections séparées par cooldown → deux messages socket
+- [x] `[TEST-I]` **Régression :** `notify()` sans client → `Ok` (silence gracieux)
+- [x] `[TEST-I]` **Régression :** `notify()` avec client → message `"WAKEWORD_DETECTED\n"` reçu
+- [x] `[TEST-I]` **Régression :** Thread runner → fermeture channel → terminaison propre
+- [x] `[TEST-I]` **Régression :** Drop sans stop → zéro thread zombie
+- [x] `[TEST-I]` **Régression :** Deux détections séparées par cooldown → deux messages socket
 
 ### P7.4 — Tests de performance
 
-- [ ] `[TEST-P]` **Latence `push` :** Mesurer le temps d'un appel `TriggerEngine::push` — doit être < 1 µs (pas de contention, pas d'I/O dans le moteur seul)
-- [ ] `[TEST-P]` **Latence `notify` :** Mesurer le temps d'un appel `IpcNotifier::notify` avec client présent — doit être < 5 ms
+- [x] `[TEST-P]` **Latence `push` :** Mesurer le temps d'un appel `TriggerEngine::push` — doit être < 1 µs (pas de contention, pas d'I/O dans le moteur seul)
+- [x] `[TEST-P]` **Latence `notify` :** Mesurer le temps d'un appel `IpcNotifier::notify` avec client présent — doit être < 5 ms
 - [ ] `[VALID]` **CPU idle :** Thread trigger bloqué sur `recv()` sans scores entrants pendant 60 s — `Instruments → Energy Log` confirme CPU ≈ 0 %
 
 ---
