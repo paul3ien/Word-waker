@@ -246,24 +246,24 @@
 
 ### P5.1 — Struct `TriggerModule`
 
-- [ ] `[IMPL]` Créer ou compléter `src/trigger/mod.rs`
-- [ ] `[IMPL]` Définir `pub struct TriggerModule { runner: TriggerRunner, config: TriggerConfig }`
-- [ ] `[IMPL]` Implémenter `TriggerModule::new(config: TriggerConfig) -> Result<Self, TriggerError>` — valide la config, crée `TriggerRunner`
-- [ ] `[IMPL]` Implémenter `TriggerModule::start(rx: Receiver<f32>) -> Result<(), TriggerError>`
-- [ ] `[IMPL]` Implémenter `TriggerModule::stop() -> Result<(), TriggerError>`
-- [ ] `[IMPL]` Implémenter `Drop for TriggerModule` — appelle `stop()` silencieusement
+- [x] `[IMPL]` Créer ou compléter `src/trigger/mod.rs`
+- [x] `[IMPL]` Définir `pub struct TriggerModule { runner: TriggerRunner, config: TriggerConfig }`
+- [x] `[IMPL]` Implémenter `TriggerModule::new(config: TriggerConfig) -> Result<Self, TriggerError>` — valide la config, crée `TriggerRunner`
+- [x] `[IMPL]` Implémenter `TriggerModule::start(rx: Receiver<f32>) -> Result<(), TriggerError>`
+- [x] `[IMPL]` Implémenter `TriggerModule::stop() -> Result<(), TriggerError>`
+- [x] `[IMPL]` Implémenter `Drop for TriggerModule` — appelle `stop()` silencieusement
 
 ### P5.2 — Tests de la façade
 
-- [ ] `[TEST-I]` **Test d'intégration :** Cycle complet `new → start → séquence de scores → stop` — détection correcte, socket notifié
-- [ ] `[TEST-I]` **Test d'intégration :** Deux cycles `start/stop` consécutifs — idempotence, zéro panique
-- [ ] `[TEST-I]` **Test d'intégration :** Drop sans stop → propre
+- [x] `[TEST-I]` **Test d'intégration :** Cycle complet `new → start → séquence de scores → stop` — détection correcte, socket notifié
+- [x] `[TEST-I]` **Test d'intégration :** Deux cycles `start/stop` consécutifs — idempotence, zéro panique
+- [x] `[TEST-I]` **Test d'intégration :** Drop sans stop → propre
 
 ### P5.3 — Mode standalone
 
-- [ ] `[IMPL]` Créer `examples/standalone_trigger.rs` (feature `standalone`)
-- [ ] `[IMPL]` L'exemple génère une séquence de scores synthétiques (vague de scores positifs, puis négatifs, puis de nouveau positifs après 3 s), instancie `TriggerModule`, log les détections et les messages socket reçus sur un listener local
-- [ ] `[TEST-I]` **Test :** `cargo run --example standalone_trigger --features standalone` — s'exécute sans erreur
+- [x] `[IMPL]` Créer `examples/standalone_trigger.rs` (feature `standalone`)
+- [x] `[IMPL]` L'exemple génère une séquence de scores synthétiques (vague de scores positifs, puis négatifs, puis de nouveau positifs après 3 s), instancie `TriggerModule`, log les détections et les messages socket reçus sur un listener local
+- [x] `[TEST-I]` **Test :** `cargo run --example standalone_trigger --features standalone` — s'exécute sans erreur
 - [ ] `[VALID]` **Validation manuelle :** Dans un autre terminal, `nc -U /tmp/wakeword_daemon.sock` (ou le path de test) — vérifier la réception de `"WAKEWORD_DETECTED\n"` au bon moment
 
 ---
