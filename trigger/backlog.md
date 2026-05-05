@@ -175,26 +175,26 @@
 
 ### P3.1 — Structure et constructeur
 
-- [ ] `[IMPL]` Créer `src/trigger/ipc.rs`
-- [ ] `[IMPL]` Définir la struct `IpcNotifier { socket_path: String }`
-- [ ] `[IMPL]` Implémenter `IpcNotifier::new(socket_path: String) -> Self`
+- [x] `[IMPL]` Créer `src/trigger/ipc.rs`
+- [x] `[IMPL]` Définir la struct `IpcNotifier { socket_path: String }`
+- [x] `[IMPL]` Implémenter `IpcNotifier::new(socket_path: String) -> Self`
 
 ### P3.2 — Envoi de notification
 
-- [ ] `[IMPL]` Implémenter `IpcNotifier::notify(&self) -> Result<(), TriggerError>` :
-  - [ ] `[IMPL]` Tenter `UnixStream::connect(&self.socket_path)`
-  - [ ] `[IMPL]` Si succès : écrire `b"WAKEWORD_DETECTED\n"` via `write_all`
-  - [ ] `[IMPL]` Si échec de connexion (aucun client) : logger un `tracing::debug!` et retourner `Ok(())` — **pas d'erreur fatale**
-  - [ ] `[IMPL]` Si échec d'écriture après connexion réussie : retourner `Err(IpcSendFailed(...))`
-- [ ] `[IMPL]` Implémenter `IpcNotifier::notify_with_payload(&self, payload: &[u8]) -> Result<(), TriggerError>` — variante permettant un message customisé (pour les tests et extensions futures)
+- [x] `[IMPL]` Implémenter `IpcNotifier::notify(&self) -> Result<(), TriggerError>` :
+  - [x] `[IMPL]` Tenter `UnixStream::connect(&self.socket_path)`
+  - [x] `[IMPL]` Si succès : écrire `b"WAKEWORD_DETECTED\n"` via `write_all`
+  - [x] `[IMPL]` Si échec de connexion (aucun client) : logger un `tracing::debug!` et retourner `Ok(())` — **pas d'erreur fatale**
+  - [x] `[IMPL]` Si échec d'écriture après connexion réussie : retourner `Err(IpcSendFailed(...))`
+- [x] `[IMPL]` Implémenter `IpcNotifier::notify_with_payload(&self, payload: &[u8]) -> Result<(), TriggerError>` — variante permettant un message customisé (pour les tests et extensions futures)
 
 ### P3.3 — Tests du notifier
 
-- [ ] `[TEST-I]` **Test d'intégration — aucun client :** Appeler `notify()` sans aucun listener sur le socket → retourne `Ok(())` sans panique ni log d'erreur fatale
-- [ ] `[TEST-I]` **Test d'intégration — client présent :** Ouvrir un `UnixListener` dans le test, appeler `notify()`, vérifier que le listener reçoit `"WAKEWORD_DETECTED\n"`
-- [ ] `[TEST-I]` **Test d'intégration — message complet :** Vérifier que le message reçu est exactement `b"WAKEWORD_DETECTED\n"` (longueur, contenu, pas de troncature)
-- [ ] `[TEST-I]` **Test d'intégration — notifications multiples :** Appeler `notify()` 5 fois successives → 5 messages reçus côté listener
-- [ ] `[TEST-U]` **Test unitaire :** `IpcNotifier::new("/tmp/test.sock")` crée l'instance sans erreur (pas de connexion dans `new`)
+- [x] `[TEST-I]` **Test d'intégration — aucun client :** Appeler `notify()` sans aucun listener sur le socket → retourne `Ok(())` sans panique ni log d'erreur fatale
+- [x] `[TEST-I]` **Test d'intégration — client présent :** Ouvrir un `UnixListener` dans le test, appeler `notify()`, vérifier que le listener reçoit `"WAKEWORD_DETECTED\n"`
+- [x] `[TEST-I]` **Test d'intégration — message complet :** Vérifier que le message reçu est exactement `b"WAKEWORD_DETECTED\n"` (longueur, contenu, pas de troncature)
+- [x] `[TEST-I]` **Test d'intégration — notifications multiples :** Appeler `notify()` 5 fois successives → 5 messages reçus côté listener
+- [x] `[TEST-U]` **Test unitaire :** `IpcNotifier::new("/tmp/test.sock")` crée l'instance sans erreur (pas de connexion dans `new`)
 
 ---
 
