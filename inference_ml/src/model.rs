@@ -1,6 +1,3 @@
-use std::ffi::CString;
-use std::path::Path;
-
 use crate::config::InferenceConfig;
 use crate::error::InferenceError;
 use crate::ffi;
