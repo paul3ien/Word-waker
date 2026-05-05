@@ -276,8 +276,8 @@
 
 ### P6.1 — Test d'intégration workspace
 
-- [ ] `[TEST-I]` **Test workspace :** Dans `integration_test`, brancher `inference_ml` (mode `mock_model`) → `trigger` → `UnixListener` de test — envoyer des matrices MFCC qui déclenchent un score > 0.80, vérifier la réception du message socket de bout en bout
-- [ ] `[TEST-I]` **Test workspace :** Vérifier la latence bout-en-bout : timestamp à l'envoi de la matrice MFCC → timestamp à la réception du message socket — doit être < 150 ms
+- [x] `[TEST-I]` **Test workspace :** Dans `integration_test`, brancher `inference_ml` (mode `mock_model`) → `trigger` → `UnixListener` de test — envoyer des matrices MFCC qui déclenchent un score > 0.80, vérifier la réception du message socket de bout en bout
+- [x] `[TEST-I]` **Test workspace :** Vérifier la latence bout-en-bout : timestamp à l'envoi de la matrice MFCC → timestamp à la réception du message socket — doit être < 150 ms
 - [ ] `[TEST-I]` **Test workspace :** Vérifier qu'aucune fuite mémoire n'est introduite par l'intégration (AddressSanitizer sur la suite d'intégration)
 
 ### P6.2 — Validation des métriques cibles

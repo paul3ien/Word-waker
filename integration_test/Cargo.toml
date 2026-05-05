@@ -6,4 +6,5 @@ publish = false
 
 [dev-dependencies]
 inference_ml = { path = "../inference_ml" }
+trigger = { path = "../trigger" }
 crossbeam-channel = "0.5"
