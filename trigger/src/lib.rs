@@ -1,3 +1,3 @@
 pub mod trigger;
 
-pub use trigger::{TriggerConfig, TriggerEngine, TriggerError};
+pub use trigger::{IpcNotifier, TriggerConfig, TriggerEngine, TriggerError, TriggerRunner};

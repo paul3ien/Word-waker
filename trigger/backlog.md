@@ -206,35 +206,35 @@
 
 ### P4.1 — Structure du runner
 
-- [ ] `[IMPL]` Créer `src/trigger/runner.rs`
-- [ ] `[IMPL]` Définir la struct `TriggerRunner` :
+- [x] `[IMPL]` Créer `src/trigger/runner.rs`
+- [x] `[IMPL]` Définir la struct `TriggerRunner` :
   ```
   engine: TriggerEngine,
   notifier: IpcNotifier,
   running: Arc<AtomicBool>,
   thread_handle: Option<JoinHandle<()>>,
   ```
-- [ ] `[IMPL]` Implémenter `TriggerRunner::new(config: &TriggerConfig) -> Self`
+- [x] `[IMPL]` Implémenter `TriggerRunner::new(config: &TriggerConfig) -> Self`
 
 ### P4.2 — Boucle principale
 
-- [ ] `[IMPL]` Implémenter `TriggerRunner::start(rx: Receiver<f32>) -> Result<(), TriggerError>` :
-  - [ ] `[IMPL]` Spawner un thread qui boucle sur `rx.recv()` (bloquant — zéro polling, zéro CPU en idle)
-  - [ ] `[IMPL]` Pour chaque score reçu : appeler `engine.push(score)`
-  - [ ] `[IMPL]` Si `push` retourne `true` : appeler `notifier.notify()`, logger la détection avec `tracing::info!("WAKE-WORD DETECTED — score window: {:?}", ...)`
-  - [ ] `[IMPL]` Si `rx.recv()` retourne `Err` (channel fermé) : sortir de la boucle proprement
-  - [ ] `[IMPL]` Logger chaque score reçu au niveau `tracing::trace!`
-- [ ] `[IMPL]` Implémenter `TriggerRunner::stop()` : poser `running` à false, `join` le thread
-- [ ] `[IMPL]` Implémenter `Drop for TriggerRunner` : appelle `stop()` silencieusement
+- [x] `[IMPL]` Implémenter `TriggerRunner::start(rx: Receiver<f32>) -> Result<(), TriggerError>` :
+  - [x] `[IMPL]` Spawner un thread qui boucle sur `rx.recv()` (bloquant — zéro polling, zéro CPU en idle)
+  - [x] `[IMPL]` Pour chaque score reçu : appeler `engine.push(score)`
+  - [x] `[IMPL]` Si `push` retourne `true` : appeler `notifier.notify()`, logger la détection avec `tracing::info!("WAKE-WORD DETECTED — score window: {:?}", ...)`
+  - [x] `[IMPL]` Si `rx.recv()` retourne `Err` (channel fermé) : sortir de la boucle proprement
+  - [x] `[IMPL]` Logger chaque score reçu au niveau `tracing::trace!`
+- [x] `[IMPL]` Implémenter `TriggerRunner::stop()` : poser `running` à false, `join` le thread
+- [x] `[IMPL]` Implémenter `Drop for TriggerRunner` : appelle `stop()` silencieusement
 
 ### P4.3 — Tests du runner
 
-- [ ] `[TEST-I]` **Test d'intégration :** Envoyer une séquence de 5 scores dont 3 > 0.80 → vérifier qu'un message est reçu sur un `UnixListener` de test
-- [ ] `[TEST-I]` **Test d'intégration :** Envoyer 10 scores tous < 0.80 → vérifier qu'aucun message n'est émis sur le socket
-- [ ] `[TEST-I]` **Test d'intégration :** Fermer le `Sender` → le thread se termine proprement, `stop()` ne panic pas
-- [ ] `[TEST-I]` **Test d'intégration :** Drop sans `stop()` → zéro thread zombie
-- [ ] `[TEST-I]` **Test d'intégration — cooldown :** Déclencher une détection, puis immédiatement envoyer 5 scores positifs → un seul message reçu (cooldown actif)
-- [ ] `[TEST-I]` **Test d'intégration — double détection :** Déclencher, attendre `cooldown_ms + 100` ms (via `std::thread::sleep` dans le test), envoyer 3 scores positifs → second message reçu
+- [x] `[TEST-I]` **Test d'intégration :** Envoyer une séquence de 5 scores dont 3 > 0.80 → vérifier qu'un message est reçu sur un `UnixListener` de test
+- [x] `[TEST-I]` **Test d'intégration :** Envoyer 10 scores tous < 0.80 → vérifier qu'aucun message n'est émis sur le socket
+- [x] `[TEST-I]` **Test d'intégration :** Fermer le `Sender` → le thread se termine proprement, `stop()` ne panic pas
+- [x] `[TEST-I]` **Test d'intégration :** Drop sans `stop()` → zéro thread zombie
+- [x] `[TEST-I]` **Test d'intégration — cooldown :** Déclencher une détection, puis immédiatement envoyer 5 scores positifs → un seul message reçu (cooldown actif)
+- [x] `[TEST-I]` **Test d'intégration — double détection :** Déclencher, attendre `cooldown_ms + 100` ms (via `std::thread::sleep` dans le test), envoyer 3 scores positifs → second message reçu
 
 ---
 
