@@ -33,20 +33,14 @@ impl IpcNotifier {
     /// Même sémantique que `notify` : silence gracieux si aucun client.
     pub fn notify_with_payload(&self, payload: &[u8]) -> Result<(), TriggerError> {
         match UnixStream::connect(&self.socket_path) {
-            Ok(mut stream) => {
-                stream.write_all(payload).map_err(|e| {
-                    TriggerError::IpcSendFailed(format!(
-                        "write_all failed on {}: {}",
-                        self.socket_path, e
-                    ))
-                })
-            }
+            Ok(mut stream) => stream.write_all(payload).map_err(|e| {
+                TriggerError::IpcSendFailed(format!(
+                    "write_all failed on {}: {}",
+                    self.socket_path, e
+                ))
+            }),
             Err(e) => {
-                tracing::debug!(
-                    "IpcNotifier: no client on {} — {}",
-                    self.socket_path,
-                    e
-                );
+                tracing::debug!("IpcNotifier: no client on {} — {}", self.socket_path, e);
                 Ok(())
             }
         }

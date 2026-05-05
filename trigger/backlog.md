@@ -334,23 +334,23 @@
 
 ### P8.1 — Documentation
 
-- [ ] `[SETUP]` Ajouter doc-comments `///` sur tous les types et fonctions publics : `TriggerModule`, `TriggerConfig`, `TriggerError`, `TriggerEngine`, `IpcNotifier`
-- [ ] `[SETUP]` Écrire un doc-example dans `TriggerModule::new` montrant le cycle minimal `new/start/stop`
-- [ ] `[SETUP]` Documenter dans le doc-comment de `TriggerEngine::push` la sémantique exacte du vote (seuil strict `>`, cooldown avant vote, clear après détection)
-- [ ] `[TEST-U]` **Test :** `cargo doc --no-deps -p trigger` — sans erreur ni warning
+- [x] `[SETUP]` Ajouter doc-comments `///` sur tous les types et fonctions publics : `TriggerModule`, `TriggerConfig`, `TriggerError`, `TriggerEngine`, `IpcNotifier`
+- [x] `[SETUP]` Écrire un doc-example dans `TriggerModule::new` montrant le cycle minimal `new/start/stop`
+- [x] `[SETUP]` Documenter dans le doc-comment de `TriggerEngine::push` la sémantique exacte du vote (seuil strict `>`, cooldown avant vote, clear après détection)
+- [x] `[TEST-U]` **Test :** `cargo doc --no-deps -p trigger` — sans erreur ni warning
 
 ### P8.2 — Validation finale
 
-- [ ] `[VALID]` `cargo clippy -p trigger -- -D warnings` — zéro warning
-- [ ] `[VALID]` `cargo fmt --check -p trigger` — code formaté
-- [ ] `[VALID]` `cargo test -p trigger` — suite complète verte
-- [ ] `[VALID]` `cargo test -p trigger --features mock_scores` — suite mock verte
-- [ ] `[VALID]` `cargo build -p trigger --release` — compile proprement
+- [x] `[VALID]` `cargo clippy -p trigger -- -D warnings` — zéro warning
+- [x] `[VALID]` `cargo fmt --check -p trigger` — code formaté
+- [x] `[VALID]` `cargo test -p trigger` — suite complète verte
+- [x] `[VALID]` `cargo test -p trigger --features mock_scores` — suite mock verte
+- [x] `[VALID]` `cargo build -p trigger --release` — compile proprement
 
 ### P8.3 — Intégration dans le workspace et le daemon
 
-- [ ] `[SETUP]` Vérifier que `trigger` est bien dans le `[workspace]` racine
-- [ ] `[SETUP]` Documenter dans `trigger/README.md` : sémantique du vote, paramètres conseillés, format du message socket, comment se connecter côté client (exemple `nc -U`)
+- [x] `[SETUP]` Vérifier que `trigger` est bien dans le `[workspace]` racine
+- [x] `[SETUP]` Documenter dans `trigger/README.md` : sémantique du vote, paramètres conseillés, format du message socket, comment se connecter côté client (exemple `nc -U`)
 - [ ] `[TEST-I]` **Test d'intégration finale workspace :** Chaîne complète `audio_capture (mock) → pipeline_dsp → inference_ml (mock) → trigger → UnixListener` — vérifier la réception d'un message socket sur un signal synthétique déclenchant
 
 ---

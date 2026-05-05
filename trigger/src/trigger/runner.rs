@@ -68,6 +68,8 @@ impl TriggerRunner {
     }
 
     /// Arrête proprement le thread trigger et attend sa terminaison.
+    ///
+    /// Sans effet si le thread est déjà terminé ou n'a pas été démarré.
     pub fn stop(&mut self) {
         // Dropper stop_tx ferme le channel → select! se débloque et sort
         drop(self.stop_tx.take());
@@ -150,7 +152,9 @@ mod tests {
         cleanup(&path);
 
         let listener = UnixListener::bind(&path).expect("bind failed");
-        listener.set_nonblocking(true).expect("set_nonblocking failed");
+        listener
+            .set_nonblocking(true)
+            .expect("set_nonblocking failed");
 
         let mut runner = TriggerRunner::new(&test_config(&path));
         let (tx, rx) = crossbeam_channel::unbounded::<f32>();
@@ -229,7 +233,9 @@ mod tests {
         drop(tx);
         runner.stop(); // garantit que tout est traité
 
-        listener.set_nonblocking(true).expect("set_nonblocking failed");
+        listener
+            .set_nonblocking(true)
+            .expect("set_nonblocking failed");
         assert!(
             listener.accept().is_err(),
             "Le cooldown aurait dû bloquer le second déclenchement"
