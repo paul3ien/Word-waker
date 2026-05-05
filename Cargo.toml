@@ -1,3 +1,3 @@
 [workspace]
-members = ["audio_capture", "pipeline", "inference_ml", "integration_test"]
+members = ["audio_capture", "pipeline", "inference_ml", "integration_test", "trigger"]
 resolver = "2"

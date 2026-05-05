@@ -688,6 +688,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "trigger"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "crossbeam-channel",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "unicode-ident"
 version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"

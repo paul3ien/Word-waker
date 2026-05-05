@@ -1,5 +1,5 @@
 docs/
-
+wordwaker.trace/
 # Rust build artifacts
 target/
 **/*.rs.bk
