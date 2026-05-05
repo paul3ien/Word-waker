@@ -27,7 +27,14 @@ Microphone (CoreAudio HAL)
 └────────┬────────┘
          │  f32  (score wake-word ∈ [0.0, 1.0])
          ▼
-      trigger
+┌─────────────────┐
+│    trigger      │  vote glissant anti-faux-positifs (fenêtre 5 scores)
+│                 │  cooldown 2 s entre deux détections
+└────────┬────────┘
+         │  "WAKEWORD_DETECTED\n"
+         ▼
+  Unix Domain Socket  →  Application cliente
+  /tmp/wakeword_daemon.sock
 ```
 
 ## Crates
@@ -37,7 +44,8 @@ Microphone (CoreAudio HAL)
 | `audio_capture` | Capture microphone 16 kHz via CoreAudio HAL | ✅ Terminé |
 | `pipeline` | DSP : pre-emphasis, framing, FFT vDSP, banc Mel 40 filtres, DCT-II → MFCC `[[f32;13];98]` | ✅ Terminé |
 | `inference_ml` | Inférence CoreML in-process via bridge Objective-C++, thread dédié crossbeam | ✅ Terminé |
-| `integration_test` | Test d'intégration workspace : simule le flux `pipeline_dsp → inference_ml` | ✅ Terminé |
+| `trigger` | Vote glissant anti-faux-positifs, cooldown, notification via Unix Domain Socket | ✅ Terminé |
+| `integration_test` | Tests d'intégration workspace : `pipeline_dsp → inference_ml → trigger → socket` | ✅ Terminé |
 
 ## Prérequis
 
@@ -58,6 +66,7 @@ pip install coremltools numpy
 cargo test -p audio_capture --features mock_audio
 cargo test -p pipeline_dsp
 cargo test -p inference_ml --features mock_model
+cargo test -p trigger
 cargo test -p integration_test
 
 # Ou tous en une commande (nécessite microphone pour audio_capture)
@@ -93,7 +102,7 @@ python scripts/generate_mock_model.py
 
 ```
 Word-waker/
-├── Cargo.toml           — workspace (members: audio_capture, pipeline, inference_ml, integration_test)
+├── Cargo.toml           — workspace (members: audio_capture, pipeline, inference_ml, trigger, integration_test)
 ├── audio_capture/       — capture CoreAudio
 │   ├── src/
 │   ├── tests/
@@ -108,7 +117,12 @@ Word-waker/
 │   ├── fixtures/        — WakeWordMock.mlmodelc
 │   ├── tests/
 │   └── README.md
-├── integration_test/    — test d'intégration workspace
+├── trigger/             — vote glissant + IPC Unix Domain Socket
+│   ├── src/trigger/     — engine, ipc, runner, config, error
+│   ├── tests/           — suite de régression & performance
+│   ├── examples/        — standalone_trigger
+│   └── README.md
+├── integration_test/    — tests d'intégration workspace
 │   └── tests/
 └── docs/
 ```
