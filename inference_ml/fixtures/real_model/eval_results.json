@@ -1,0 +1,17 @@
+{
+  "checkpoint": "checkpoints/best_model.pt",
+  "optimal_threshold": 0.08008812367916107,
+  "val_auc": 0.9997210874344372,
+  "test_auc": 0.999252899774902,
+  "test_frr": 0.015910481685462018,
+  "test_far": 0.005676778428241973,
+  "test_accuracy": 0.9891691982565051,
+  "test_tp": 11257,
+  "test_fn": 182,
+  "test_fp": 64,
+  "test_tn": 11210,
+  "go_auc": true,
+  "go_frr": true,
+  "go_far": true,
+  "go": true
+}

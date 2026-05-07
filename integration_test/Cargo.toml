@@ -7,4 +7,6 @@ publish = false
 [dev-dependencies]
 inference_ml = { path = "../inference_ml" }
 trigger = { path = "../trigger" }
+audio_capture = { path = "../audio_capture", features = ["mock_audio"] }
+pipeline_dsp = { path = "../pipeline" }
 crossbeam-channel = "0.5"

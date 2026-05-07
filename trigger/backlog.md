@@ -351,7 +351,7 @@
 
 - [x] `[SETUP]` Vérifier que `trigger` est bien dans le `[workspace]` racine
 - [x] `[SETUP]` Documenter dans `trigger/README.md` : sémantique du vote, paramètres conseillés, format du message socket, comment se connecter côté client (exemple `nc -U`)
-- [ ] `[TEST-I]` **Test d'intégration finale workspace :** Chaîne complète `audio_capture (mock) → pipeline_dsp → inference_ml (mock) → trigger → UnixListener` — vérifier la réception d'un message socket sur un signal synthétique déclenchant
+- [x] `[TEST-I]` **Test d'intégration finale workspace :** Chaîne complète `audio_capture (mock) → pipeline_dsp → inference_ml (mock) → trigger → UnixListener` — vérifier la réception d'un message socket sur un signal synthétique déclenchant
 
 ---
 

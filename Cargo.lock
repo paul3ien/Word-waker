@@ -296,6 +296,7 @@ dependencies = [
  "criterion",
  "crossbeam-channel",
  "libc",
+ "serde_json",
  "tracing",
  "tracing-subscriber",
 ]
@@ -304,8 +305,10 @@ dependencies = [
 name = "integration_test"
 version = "0.1.0"
 dependencies = [
+ "audio_capture",
  "crossbeam-channel",
  "inference_ml",
+ "pipeline_dsp",
  "trigger",
 ]
 

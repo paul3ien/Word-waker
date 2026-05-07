@@ -65,13 +65,18 @@ float coreml_infer(CoreMLHandle handle, const float* mfcc_flat, size_t len) {
     // et ne sont drainés qu'à la fin du run loop (jamais, pour un thread Rust).
     float result = 0.0f;
     @autoreleasepool {
-        // Construit MLMultiArray [1, 98, 13] Double
-        // (le modèle NeuralNetwork compilé par coremltools utilise Double par défaut)
-        NSArray<NSNumber*>* shape = @[@1, @98, @13];
+        // ── Détecter la shape et le type d'entrée depuis la description du modèle ──
+        // Cela permet de supporter aussi bien le modèle mock NeuralNetwork
+        // ([1,98,13] Double) que le vrai modèle MIL ([1,1,98,13] Float32).
+        MLFeatureDescription* inputDesc =
+            model.modelDescription.inputDescriptionsByName[@"mfcc_input"];
+        NSArray<NSNumber*>* shape = inputDesc.multiArrayConstraint.shape;
+        MLMultiArrayDataType dtype  = inputDesc.multiArrayConstraint.dataType;
+
         NSError* err = nil;
         MLMultiArray* array = [[MLMultiArray alloc]
                                 initWithShape:shape
-                                     dataType:MLMultiArrayDataTypeDouble
+                                     dataType:dtype
                                         error:&err];
         if (err != nil || array == nil) {
             const char* msg = err ? [err.localizedDescription UTF8String] : "array==nil";
@@ -80,12 +85,20 @@ float coreml_infer(CoreMLHandle handle, const float* mfcc_flat, size_t len) {
         }
 
         {
-            // Convertit les float Rust en double pour CoreML
-            size_t expected = 1 * 98 * 13;
-            size_t copy_len = (len < expected) ? len : expected;
-            double* dst = (double*)array.dataPointer;
-            for (size_t i = 0; i < copy_len; ++i) {
-                dst[i] = (double)mfcc_flat[i];
+            // Calculer la taille totale depuis la shape réelle du modèle
+            size_t total = 1;
+            for (NSNumber* dim in shape) { total *= dim.unsignedIntegerValue; }
+            size_t copy_len = (len < total) ? len : total;
+
+            if (dtype == MLMultiArrayDataTypeFloat32) {
+                // Copie directe float→float (vrai modèle MIL)
+                memcpy(array.dataPointer, mfcc_flat, copy_len * sizeof(float));
+            } else {
+                // Conversion float→double (modèle NeuralNetwork legacy)
+                double* dst = (double*)array.dataPointer;
+                for (size_t i = 0; i < copy_len; ++i) {
+                    dst[i] = (double)mfcc_flat[i];
+                }
             }
 
             // Construit le FeatureProvider

@@ -204,7 +204,7 @@
   - [x] `[IMPL-RS]` Vérifier que le handle n'est pas null → `Err(InferenceError::NullHandle)` sinon
 - [x] `[TEST-I]` **Test d'intégration :** `CoreMLModel::load` avec le modèle mock → `Ok`
 - [x] `[TEST-I]` **Test d'intégration :** `CoreMLModel::load` avec un chemin inexistant → `Err(ModelNotFound)`
-- [ ] `[TEST-U]` **Test unitaire (feature mock_model) :** `CoreMLModel::load` retourne un stub sans appeler le bridge FFI
+- [x] `[TEST-U]` **Test unitaire (feature mock_model) :** `CoreMLModel::load` retourne un stub sans appeler le bridge FFI
 
 ### P5.2 — Méthode d'inférence
 
@@ -214,8 +214,8 @@
   - [x] `[IMPL-RS]` Vérifier que le score retourné est dans [0.0, 1.0] (invariant de contrat) → `Err(InferenceFailed)` sinon
 - [x] `[TEST-I]` **Test d'intégration :** Inférence sur matrice de zéros → score dans [0.0, 1.0]
 - [x] `[TEST-I]` **Test d'intégration :** Inférence sur matrice de valeurs aléatoires → score dans [0.0, 1.0]
-- [ ] `[TEST-U]` **Test unitaire :** Score = -0.1 retourné par le bridge → `Err(InferenceFailed)` (validation de l'invariant)
-- [ ] `[TEST-U]` **Test unitaire :** Score = 1.1 → `Err(InferenceFailed)`
+- [x] `[TEST-U]` **Test unitaire :** Score = -0.1 retourné par le bridge → `Err(InferenceFailed)` (validation de l'invariant)
+- [x] `[TEST-U]` **Test unitaire :** Score = 1.1 → `Err(InferenceFailed)`
 
 ### P5.3 — Drop et gestion mémoire
 
@@ -274,7 +274,7 @@
 ### P7.2 — Tests de la façade
 
 - [x] `[TEST-I]` **Test d'intégration :** Cycle complet `new → start → 3 inférences → stop` avec modèle mock — tous les scores dans [0.0, 1.0]
-- [ ] `[TEST-I]` **Test d'intégration :** Deux cycles `start/stop` consécutifs — idempotence, zéro panique
+- [x] `[TEST-I]` **Test d'intégration :** Deux cycles `start/stop` consécutifs — idempotence, zéro panique
 - [x] `[TEST-I]` **Test d'intégration :** Drop sans stop → propre
 
 ### P7.3 — Mode standalone

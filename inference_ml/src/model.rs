@@ -1,6 +1,8 @@
 use crate::config::InferenceConfig;
 use crate::error::InferenceError;
 use crate::ffi;
+use std::ffi::CString;
+use std::path::Path;
 
 /// Wrapper Rust autour d'un handle `MLModel` Core ML.
 ///

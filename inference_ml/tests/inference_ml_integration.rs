@@ -310,6 +310,49 @@ fn engine_drop_without_stop_no_crash() {
     drop(engine);
 }
 
+/// Deux cycles start/stop consécutifs — idempotence, zéro panique.
+#[test]
+fn engine_two_consecutive_start_stop_cycles() {
+    let config = mock_config();
+    let mut engine = InferenceEngine::new(config).expect("new échoué");
+
+    // ── Cycle 1 ───────────────────────────────────────────────────────────────
+    let (tx_in1, rx_in1) = bounded::<[[f32; 13]; 98]>(4);
+    let (tx_out1, rx_out1) = bounded::<f32>(4);
+
+    engine.start(rx_in1, tx_out1).expect("start cycle 1 échoué");
+
+    tx_in1.send([[0.0f32; 13]; 98]).expect("send cycle 1 échoué");
+    let score1 = rx_out1
+        .recv_timeout(std::time::Duration::from_secs(5))
+        .expect("timeout score cycle 1");
+    assert!(
+        (0.0f32..=1.0f32).contains(&score1),
+        "cycle 1 score={score1} hors [0.0, 1.0]"
+    );
+
+    drop(tx_in1);
+    engine.stop().expect("stop cycle 1 échoué");
+
+    // ── Cycle 2 ───────────────────────────────────────────────────────────────
+    let (tx_in2, rx_in2) = bounded::<[[f32; 13]; 98]>(4);
+    let (tx_out2, rx_out2) = bounded::<f32>(4);
+
+    engine.start(rx_in2, tx_out2).expect("start cycle 2 échoué");
+
+    tx_in2.send([[0.5f32; 13]; 98]).expect("send cycle 2 échoué");
+    let score2 = rx_out2
+        .recv_timeout(std::time::Duration::from_secs(5))
+        .expect("timeout score cycle 2");
+    assert!(
+        (0.0f32..=1.0f32).contains(&score2),
+        "cycle 2 score={score2} hors [0.0, 1.0]"
+    );
+
+    drop(tx_in2);
+    engine.stop().expect("stop cycle 2 échoué");
+}
+
 // ─── P9.3 ────────────────────────────────────────────────────────────────────
 
 /// Régression : new → drop sans start — zéro fuite.
@@ -375,4 +418,105 @@ fn runner_channel_closed_during_inference_terminates() {
 
     // Le thread doit être terminé ou en cours de terminaison.
     runner.stop();
+}
+
+// ─── P9.2 ────────────────────────────────────────────────────────────────────
+
+/// Valide que les scores Rust correspondent aux scores Python de validation_cases.json.
+///
+/// Pré-requis (skip automatique si absents) :
+///   - `fixtures/real_model/WakeWord.mlmodelc`  (copié depuis model_ww_v2/exports/)
+///   - `validation_cases.json`                   (généré par validate_fixture.py)
+///
+/// Le chemin JSON peut être surchargé via la var d'env `WW_EXPORTS_DIR`.
+#[cfg(not(feature = "mock_model"))]
+#[test]
+fn real_model_matches_validation_cases() {
+    use std::path::PathBuf;
+
+    // ── Chemins ──────────────────────────────────────────────────────────────
+    let real_model_path = format!(
+        "{}/fixtures/real_model/WakeWord.mlmodelc",
+        env!("CARGO_MANIFEST_DIR")
+    );
+
+    let json_path: PathBuf = std::env::var("WW_EXPORTS_DIR")
+        .map(|d| PathBuf::from(d).join("validation_cases.json"))
+        .unwrap_or_else(|_| {
+            PathBuf::from(
+                "/Users/apple/Documents/Code/model_ww_v2/exports/validation_cases.json",
+            )
+        });
+
+    // ── Skip si artefacts absents (modèle pas encore entraîné) ───────────────
+    if !std::path::Path::new(&real_model_path).exists() {
+        eprintln!(
+            "[SKIP] real_model_matches_validation_cases : {} absent",
+            real_model_path
+        );
+        eprintln!("       Lancer d'abord src/export/export_run.py puis copier :");
+        eprintln!(
+            "       cp -r model_ww_v2/exports/WakeWord.mlmodelc \
+                    inference_ml/fixtures/real_model/"
+        );
+        return;
+    }
+    if !json_path.exists() {
+        eprintln!(
+            "[SKIP] real_model_matches_validation_cases : {} absent",
+            json_path.display()
+        );
+        eprintln!("       Lancer d'abord : python src/scripts/validate_fixture.py");
+        return;
+    }
+
+    // ── Charger le vrai modèle ────────────────────────────────────────────────
+    let cpath = std::ffi::CString::new(real_model_path.as_str()).expect("CString invalide");
+    let handle = unsafe { ffi::coreml_load(cpath.as_ptr()) };
+    assert!(!handle.is_null(), "coreml_load du vrai modèle échoué");
+
+    // ── Lire validation_cases.json ────────────────────────────────────────────
+    let json_str = std::fs::read_to_string(&json_path).expect("lecture JSON échouée");
+    let payload: serde_json::Value = serde_json::from_str(&json_str).expect("JSON invalide");
+    let cases = payload["cases"].as_array().expect("clé 'cases' manquante dans le JSON");
+    assert_eq!(cases.len(), 20, "20 cas attendus dans validation_cases.json");
+
+    // ── Comparer les scores (tolérance < 0.01) ────────────────────────────────
+    let tolerance: f32 = 0.01;
+    let mut max_err: f32 = 0.0;
+
+    for case in cases {
+        let name = case["name"].as_str().unwrap_or("?");
+        let score_python = case["score_ww"]
+            .as_f64()
+            .expect("champ 'score_ww' manquant") as f32;
+
+        // Reconstruire le vecteur MFCC aplati (98 × 13 = 1274 floats)
+        let mfcc_json = case["mfcc"].as_array().expect("champ 'mfcc' manquant");
+        let mut mfcc_flat: Vec<f32> = Vec::with_capacity(98 * 13);
+        for row in mfcc_json {
+            for v in row.as_array().expect("ligne mfcc invalide") {
+                mfcc_flat.push(v.as_f64().expect("valeur mfcc invalide") as f32);
+            }
+        }
+        assert_eq!(mfcc_flat.len(), 98 * 13, "taille mfcc incorrecte pour '{name}'");
+
+        let score_rust =
+            unsafe { ffi::coreml_infer(handle, mfcc_flat.as_ptr(), mfcc_flat.len()) };
+
+        let err = (score_rust - score_python).abs();
+        max_err = max_err.max(err);
+
+        assert!(
+            err < tolerance,
+            "cas '{name}': score_rust={score_rust:.6} score_python={score_python:.6} \
+             err={err:.4} >= {tolerance}"
+        );
+    }
+
+    eprintln!(
+        "  20/20 cas validés  |  err_max={max_err:.4e}  |  tolérance={tolerance}"
+    );
+
+    unsafe { ffi::coreml_free(handle) };
 }
