@@ -161,6 +161,273 @@ fn numerical_mel_filterbank_non_negative_sum_positive() {
     }
 }
 
+// ---------------------------------------------------------------------------
+// P11.3 — Tests [TEST-N] : validation numérique vs références externes
+// Chargent fixtures/numerical_references.json (généré par
+// scripts/generate_numerical_references.py via numpy/scipy).
+// ---------------------------------------------------------------------------
+
+/// P3.2 — Pré-accentuation trame 0 du signal de référence vs librosa
+#[cfg(not(feature = "skip_fixtures"))]
+#[test]
+fn numerical_preemphasis_vs_librosa_reference() {
+    use serde_json::Value;
+    use std::fs;
+    let raw = fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/fixtures/numerical_references.json"
+    ))
+    .expect("fixtures/numerical_references.json introuvable — exécuter scripts/generate_numerical_references.py");
+    let fixture: Value = serde_json::from_str(&raw).unwrap();
+    let expected: Vec<f32> =
+        serde_json::from_value(fixture["preemphasis_frame0"].clone()).unwrap();
+
+    let mut frame: Vec<f32> = (0..400usize)
+        .map(|n| (2.0 * PI * 440.0 * n as f32 / 16000.0).sin())
+        .collect();
+    let mut pe = PreEmphasis::new(0.97);
+    pe.apply(&mut frame);
+
+    let max_err = frame
+        .iter()
+        .zip(expected.iter())
+        .map(|(g, e)| (g - e).abs())
+        .fold(0.0f32, f32::max);
+    assert!(
+        max_err < 1e-5,
+        "P3.2 erreur max pré-accentuation vs librosa = {:.2e} (tolérance 1e-5)",
+        max_err
+    );
+}
+
+/// P5.1 — Fenêtre de Hann N=400 vs numpy
+#[cfg(not(feature = "skip_fixtures"))]
+#[test]
+fn numerical_hann_400_vs_numpy_reference() {
+    use serde_json::Value;
+    use std::fs;
+    let raw = fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/fixtures/numerical_references.json"
+    ))
+    .expect("fixtures/numerical_references.json introuvable");
+    let fixture: Value = serde_json::from_str(&raw).unwrap();
+    let expected: Vec<f32> =
+        serde_json::from_value(fixture["hann_400"].clone()).unwrap();
+
+    let w = HannWindow::new(400);
+    let mut frame = vec![1.0f32; 400];
+    w.apply(&mut frame);
+
+    let max_err = frame
+        .iter()
+        .zip(expected.iter())
+        .map(|(g, e)| (g - e).abs())
+        .fold(0.0f32, f32::max);
+    assert!(
+        max_err < 1e-6,
+        "P5.1 erreur max Hann 400 vs numpy = {:.2e} (tolérance 1e-6)",
+        max_err
+    );
+}
+
+/// P6.1 — Magnitudes FFT trame 0 vs numpy (convention vDSP ×2)
+#[cfg(not(feature = "skip_fixtures"))]
+#[test]
+fn numerical_fft_magnitudes_vs_numpy_reference() {
+    use serde_json::Value;
+    use std::fs;
+    let raw = fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/fixtures/numerical_references.json"
+    ))
+    .expect("fixtures/numerical_references.json introuvable");
+    let fixture: Value = serde_json::from_str(&raw).unwrap();
+    let expected: Vec<f32> =
+        serde_json::from_value(fixture["fft_mags_frame0"].clone()).unwrap();
+
+    let mut frame: Vec<f32> = (0..400usize)
+        .map(|n| (2.0 * PI * 440.0 * n as f32 / 16000.0).sin())
+        .collect();
+    PreEmphasis::new(0.97).apply(&mut frame);
+    HannWindow::new(400).apply(&mut frame);
+
+    let mut mags = vec![0.0f32; 256];
+    VDspFft::new(512).unwrap().forward_into(&frame, &mut mags);
+
+    // Erreur normalisée par le pic (la métrique relative per-bin diverge sur les bins
+    // proches de zéro à cause du bruit numérique flottant)
+    let peak = expected.iter().cloned().fold(0.0f32, f32::max).max(1.0);
+    let max_norm_err = mags
+        .iter()
+        .zip(expected.iter())
+        .map(|(g, e)| (g - e).abs() / peak)
+        .fold(0.0f32, f32::max);
+    assert!(
+        max_norm_err < 1e-3,
+        "P6.1 erreur max normalisée FFT vs numpy = {:.2e} (tolérance 1e-3, pic={:.2})",
+        max_norm_err,
+        peak
+    );
+}
+
+/// P7.1 — Matrice Mel vs librosa
+#[cfg(not(feature = "skip_fixtures"))]
+#[test]
+fn numerical_mel_matrix_vs_librosa_reference() {
+    use serde_json::Value;
+    use std::fs;
+    let raw = fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/fixtures/numerical_references.json"
+    ))
+    .expect("fixtures/numerical_references.json introuvable");
+    let fixture: Value = serde_json::from_str(&raw).unwrap();
+    let expected: Vec<f32> =
+        serde_json::from_value(fixture["mel_matrix_flat"].clone()).unwrap();
+
+    let cfg = DspConfig::default();
+    let fb = MelFilterbank::new(&cfg);
+    assert_eq!(fb.matrix.len(), expected.len(), "taille matrice Mel diff");
+
+    let max_err = fb
+        .matrix
+        .iter()
+        .zip(expected.iter())
+        .map(|(g, e)| (g - e).abs())
+        .fold(0.0f32, f32::max);
+    assert!(
+        max_err < 1e-4,
+        "P7.1 erreur max matrice Mel vs librosa = {:.2e} (tolérance 1e-4)",
+        max_err
+    );
+}
+
+/// P7.2 — Énergies Mel trame 0 vs librosa
+#[cfg(not(feature = "skip_fixtures"))]
+#[test]
+fn numerical_mel_energies_vs_librosa_reference() {
+    use serde_json::Value;
+    use std::fs;
+    let raw = fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/fixtures/numerical_references.json"
+    ))
+    .expect("fixtures/numerical_references.json introuvable");
+    let fixture: Value = serde_json::from_str(&raw).unwrap();
+    let expected: Vec<f32> =
+        serde_json::from_value(fixture["mel_energies_frame0"].clone()).unwrap();
+
+    let mut frame: Vec<f32> = (0..400usize)
+        .map(|n| (2.0 * PI * 440.0 * n as f32 / 16000.0).sin())
+        .collect();
+    PreEmphasis::new(0.97).apply(&mut frame);
+    HannWindow::new(400).apply(&mut frame);
+
+    let mut mags = vec![0.0f32; 256];
+    VDspFft::new(512).unwrap().forward_into(&frame, &mut mags);
+
+    let cfg = DspConfig::default();
+    let mel = MelFilterbank::new(&cfg).apply(&mags);
+
+    let max_err = mel
+        .iter()
+        .zip(expected.iter())
+        .map(|(g, e)| (g - e).abs())
+        .fold(0.0f32, f32::max);
+    assert!(
+        max_err < 1e-3,
+        "P7.2 erreur max énergies Mel vs librosa = {:.2e} (tolérance 1e-3)",
+        max_err
+    );
+}
+
+/// P8.2 — DCT vs scipy (à partir du log-Mel de référence)
+#[cfg(not(feature = "skip_fixtures"))]
+#[test]
+fn numerical_dct_vs_scipy_reference() {
+    use pipeline_dsp::pipeline_dsp::mfcc::MfccExtractor;
+    use serde_json::Value;
+    use std::fs;
+    let raw = fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/fixtures/numerical_references.json"
+    ))
+    .expect("fixtures/numerical_references.json introuvable");
+    let fixture: Value = serde_json::from_str(&raw).unwrap();
+    let log_mel: Vec<f32> =
+        serde_json::from_value(fixture["log_mel_frame0"].clone()).unwrap();
+    let expected: Vec<f32> =
+        serde_json::from_value(fixture["mfcc_frame0"].clone()).unwrap();
+
+    let cfg = DspConfig::default();
+    let mfcc = MfccExtractor::new(&cfg).unwrap().extract(&log_mel);
+
+    let max_err = mfcc
+        .iter()
+        .zip(expected.iter())
+        .map(|(g, e)| (g - e).abs())
+        .fold(0.0f32, f32::max);
+    assert!(
+        max_err < 1e-4,
+        "P8.2 erreur max DCT vs scipy = {:.2e} (tolérance 1e-4)\n  Rust:   {:?}\n  Python: {:?}",
+        max_err,
+        &mfcc[..],
+        &expected[..]
+    );
+}
+
+/// P8.3 — 13 MFCC trame 0 (chaîne complète signal→MFCC) vs référence Rust
+///
+/// Compare la reconstruction manuelle étape-par-étape contre le pipeline Rust
+/// de référence (reference_mfcc.json, généré par DspPipeline). Tolère 0.05
+/// pour les écarts d'ordonnancement float32 entre reconstruction et pipeline.
+#[cfg(not(feature = "skip_fixtures"))]
+#[test]
+fn numerical_mfcc_frame0_vs_rust_reference() {
+    use pipeline_dsp::pipeline_dsp::mfcc::{log_mel_energies, MfccExtractor};
+    use serde_json::Value;
+    use std::fs;
+    // Utilise la fixture générée par DspPipeline (Rust ground truth)
+    let raw = fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/fixtures/reference_mfcc.json"
+    ))
+    .expect("fixtures/reference_mfcc.json introuvable");
+    let fixture: Value = serde_json::from_str(&raw).unwrap();
+    let ref_frames: Vec<Vec<f32>> =
+        serde_json::from_value(fixture["mfcc"].clone()).unwrap();
+    let expected = &ref_frames[0]; // trame 0
+
+    let mut frame: Vec<f32> = (0..400usize)
+        .map(|n| (2.0 * PI * 440.0 * n as f32 / 16000.0).sin())
+        .collect();
+    PreEmphasis::new(0.97).apply(&mut frame);
+    HannWindow::new(400).apply(&mut frame);
+
+    let mut mags = vec![0.0f32; 256];
+    VDspFft::new(512).unwrap().forward_into(&frame, &mut mags);
+
+    let cfg = DspConfig::default();
+    let mut mel = MelFilterbank::new(&cfg).apply(&mags);
+    log_mel_energies(&mut mel);
+
+    let mfcc = MfccExtractor::new(&cfg).unwrap().extract(&mel);
+
+    let max_err = mfcc
+        .iter()
+        .zip(expected.iter())
+        .map(|(g, e)| (g - e).abs())
+        .fold(0.0f32, f32::max);
+    assert!(
+        max_err < 0.05,
+        "P8.3 erreur max MFCC frame0 vs référence Rust = {:.4} (tolérance 0.05)\n  Reconstruit: {:?}\n  Référence:   {:?}",
+        max_err,
+        &mfcc[..],
+        &expected[..]
+    );
+}
+
 // P11.3 — Validation numérique de bout en bout vs fixture
 // Gardée par la feature skip_fixtures pour les CI sans le fichier
 #[cfg(not(feature = "skip_fixtures"))]
