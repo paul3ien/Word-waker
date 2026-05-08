@@ -6,33 +6,36 @@
 ## Architecture
 
 ```
-Microphone (CoreAudio HAL)
-        │  PCM f32, 16 kHz
-        ▼
-┌─────────────────┐
-│  audio_capture  │  capture PCM Float32 mono 16 kHz
-└────────┬────────┘
-         │  Vec<f32>
-         ▼
-┌─────────────────┐
-│    pipeline     │  pre-emphasis → framing → Hann → FFT → Mel → log → DCT
-│   (pipeline_dsp)│  produit [[f32;13];98] (98 trames × 13 coeffs MFCC)
-└────────┬────────┘
-         │  [[f32;13];98]
-         ▼
-┌─────────────────┐
-│  inference_ml   │  CoreML in-process via bridge Obj-C++
-│                 │  coreml_load / coreml_infer / coreml_free
-│                 │  MLComputeUnitsAll → CPU + GPU + ANE
-└────────┬────────┘
-         │  f32  (score wake-word ∈ [0.0, 1.0])
-         ▼
-┌─────────────────┐
-│    trigger      │  vote glissant anti-faux-positifs (fenêtre 5 scores)
-│                 │  cooldown 2 s entre deux détections
-└────────┬────────┘
-         │  "WAKEWORD_DETECTED\n"
-         ▼
+┌──────────────────────────────────────────────────────┐
+│                      daemon                          │
+│                                                      │
+│  Microphone (CoreAudio HAL)                          │
+│          │  PCM Vec<f32>, 16 kHz                     │
+│          ▼                                           │
+│  ┌─────────────────┐                                 │
+│  │  audio_capture  │  capture PCM Float32 mono 16 kHz│
+│  └────────┬────────┘                                 │
+│           │  Sender<Vec<f32>>  (channel bounded 8)   │
+│           ▼                                          │
+│  ┌─────────────────┐                                 │
+│  │    pipeline     │  pre-emphasis → framing → Hann  │
+│  │   (pipeline_dsp)│  → FFT → Mel → log → DCT        │
+│  │                 │  produit [[f32;13];98]           │
+│  └────────┬────────┘                                 │
+│           │  Sender<[[f32;13];98]>  (bounded 8)      │
+│           ▼                                          │
+│  ┌─────────────────┐                                 │
+│  │  inference_ml   │  CoreML in-process (Obj-C++)     │
+│  │                 │  MLComputeUnitsAll (CPU+GPU+ANE) │
+│  └────────┬────────┘                                 │
+│           │  Sender<f32>  score ∈ [0.0, 1.0]         │
+│           ▼                                          │
+│  ┌─────────────────┐                                 │
+│  │    trigger      │  vote glissant 3/5, cooldown 2 s │
+│  └────────┬────────┘                                 │
+└───────────┼──────────────────────────────────────────┘
+            │  "WAKEWORD_DETECTED\n"
+            ▼
   Unix Domain Socket  →  Application cliente
   /tmp/wakeword_daemon.sock
 ```
@@ -46,6 +49,7 @@ Microphone (CoreAudio HAL)
 | `inference_ml` | Inférence CoreML in-process via bridge Objective-C++, thread dédié crossbeam | ✅ Terminé |
 | `trigger` | Vote glissant anti-faux-positifs, cooldown, notification via Unix Domain Socket | ✅ Terminé |
 | `integration_test` | Tests d'intégration workspace : `pipeline_dsp → inference_ml → trigger → socket` | ✅ Terminé |
+| `daemon` | Binaire exécutable — câble les 4 crates en pipeline, gère SIGINT/SIGTERM, config via env | 🚧 En cours |
 
 ## Prérequis
 
@@ -58,6 +62,32 @@ Microphone (CoreAudio HAL)
 ```bash
 pip install coremltools numpy
 ```
+
+## Lancer le daemon
+
+```bash
+# Build release
+cargo build --release -p daemon
+
+# Lancer (modèle CoreML requis)
+WAKEWORD_MODEL_PATH=/chemin/vers/WakeWordModel.mlmodelc \
+  cargo run --release -p daemon
+
+# Écouter les détections dans un autre terminal
+nc -U /tmp/wakeword_daemon.sock
+
+# Arrêt propre
+# Ctrl+C  →  logs d'arrêt  →  exit 0
+```
+
+Variables d'environnement disponibles :
+
+| Variable | Défaut | Description |
+|---|---|---|
+| `WAKEWORD_MODEL_PATH` | *(obligatoire)* | Chemin absolu vers le `.mlmodelc` |
+| `WAKEWORD_SOCKET_PATH` | `/tmp/wakeword_daemon.sock` | Chemin du socket IPC |
+| `WAKEWORD_THRESHOLD` | `0.80` | Seuil de score individuel |
+| `WAKEWORD_COOLDOWN_MS` | `2000` | Délai minimal entre deux détections (ms) |
 
 ## Lancer les tests
 
@@ -102,7 +132,7 @@ python scripts/generate_mock_model.py
 
 ```
 Word-waker/
-├── Cargo.toml           — workspace (members: audio_capture, pipeline, inference_ml, trigger, integration_test)
+├── Cargo.toml           — workspace (members: audio_capture, pipeline, inference_ml, trigger, integration_test, daemon)
 ├── audio_capture/       — capture CoreAudio
 │   ├── src/
 │   ├── tests/
@@ -124,6 +154,10 @@ Word-waker/
 │   └── README.md
 ├── integration_test/    — tests d'intégration workspace
 │   └── tests/
+├── daemon/              — binaire exécutable final
+│   ├── src/             — main.rs, config.rs, pipeline.rs
+│   ├── backlog.md
+│   └── stack.md
 └── docs/
 ```
 
