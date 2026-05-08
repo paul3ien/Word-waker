@@ -1,0 +1,24 @@
+[package]
+name = "daemon"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "word-waker"
+path = "src/main.rs"
+
+[dependencies]
+audio_capture = { path = "../audio_capture" }
+pipeline_dsp  = { path = "../pipeline" }
+inference_ml  = { path = "../inference_ml" }
+trigger       = { path = "../trigger" }
+
+crossbeam-channel = "0.5"
+anyhow            = "1.0"
+ctrlc             = "3"
+tracing           = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[features]
+# Remplace audio_capture par des samples synthétiques (CI sans microphone)
+mock_pipeline = ["audio_capture/mock_audio"]

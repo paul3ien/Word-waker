@@ -27,14 +27,14 @@
 
 ### P0.1 — Création de la structure du crate
 
-- [ ] `[SETUP]` Créer le crate `daemon` comme binary crate dans le workspace (`cargo new --bin daemon`)
-- [ ] `[SETUP]` Ajouter `daemon` dans le `[workspace]` du `Cargo.toml` racine
-- [ ] `[SETUP]` Créer l'arborescence : `src/`, `src/config.rs`, `src/pipeline.rs`
-- [ ] `[TEST-I]` **Test de smoke :** `cargo check -p daemon` — passe sans erreur
+- [x] `[SETUP]` Créer le crate `daemon` comme binary crate dans le workspace (`cargo new --bin daemon`)
+- [x] `[SETUP]` Ajouter `daemon` dans le `[workspace]` du `Cargo.toml` racine
+- [x] `[SETUP]` Créer l'arborescence : `src/`, `src/config.rs`, `src/pipeline.rs`
+- [x] `[TEST-I]` **Test de smoke :** `cargo check -p daemon` — passe sans erreur
 
 ### P0.2 — Configuration des dépendances
 
-- [ ] `[SETUP]` Ajouter dans `[dependencies]` :
+- [x] `[SETUP]` Ajouter dans `[dependencies]` :
   - `audio_capture = { path = "../audio_capture" }`
   - `pipeline_dsp = { path = "../pipeline" }`
   - `inference_ml = { path = "../inference_ml" }`
@@ -43,18 +43,18 @@
   - `anyhow = "1.0"`
   - `tracing = "0.1"`
   - `tracing-subscriber = "0.3"`
-- [ ] `[SETUP]` Ajouter dans `[features]` : `mock_pipeline` — remplace `audio_capture` par des samples synthétiques (pour CI sans microphone)
-- [ ] `[TEST-I]` **Test :** `cargo build -p daemon` — compile sans erreur
+- [x] `[SETUP]` Ajouter dans `[features]` : `mock_pipeline` — remplace `audio_capture` par des samples synthétiques (pour CI sans microphone)
+- [x] `[TEST-I]` **Test :** `cargo build -p daemon` — compile sans erreur
 
 ### P0.3 — Configuration runtime
 
-- [ ] `[SETUP]` Créer `src/config.rs` avec la struct `DaemonConfig` :
+- [x] `[SETUP]` Créer `src/config.rs` avec la struct `DaemonConfig` :
   - `model_path: String` — chemin vers le modèle CoreML (`.mlmodelc`)
   - `socket_path: String` — chemin du socket IPC (défaut `/tmp/wakeword_daemon.sock`)
   - `score_threshold: f32` — seuil de détection (défaut `0.80`)
   - `cooldown_ms: u64` — délai entre deux détections (défaut `2000`)
-- [ ] `[IMPL]` Implémenter `DaemonConfig::from_env()` — lit `WAKEWORD_MODEL_PATH`, `WAKEWORD_SOCKET_PATH`, `WAKEWORD_THRESHOLD`, `WAKEWORD_COOLDOWN_MS` depuis les variables d'environnement avec valeurs par défaut
-- [ ] `[TEST-I]` **Test :** `DaemonConfig::from_env()` avec variables non définies → valeurs par défaut valides
+- [x] `[IMPL]` Implémenter `DaemonConfig::from_env()` — lit `WAKEWORD_MODEL_PATH`, `WAKEWORD_SOCKET_PATH`, `WAKEWORD_THRESHOLD`, `WAKEWORD_COOLDOWN_MS` depuis les variables d'environnement avec valeurs par défaut
+- [x] `[TEST-I]` **Test :** `DaemonConfig::from_env()` avec variables non définies → valeurs par défaut valides
 
 ---
 
@@ -66,36 +66,36 @@
 
 ### P1.1 — Channels inter-étages
 
-- [ ] `[IMPL]` Créer les 3 channels dans `main` :
-  - `(tx_pcm, rx_pcm): (Sender<Vec<f32>>, Receiver<Vec<f32>>)` — audio_capture → pipeline_dsp
+- [x] `[IMPL]` Créer les 3 channels dans `main` :
+  - `(tx_pcm, rx_pcm)` — `std::sync::mpsc` (exigé par AudioCapture) + pont crossbeam pour DspRunner
   - `(tx_mfcc, rx_mfcc): (Sender<[[f32;13];98]>, Receiver<[[f32;13];98]>)` — pipeline_dsp → inference_ml
   - `(tx_score, rx_score): (Sender<f32>, Receiver<f32>)` — inference_ml → trigger
 
 ### P1.2 — Initialisation des modules
 
-- [ ] `[IMPL]` Initialiser `AudioCapture::new(AudioCaptureConfig::default())`
-- [ ] `[IMPL]` Initialiser `DspRunner::start(DspConfig::default(), rx_pcm, tx_mfcc)`
-- [ ] `[IMPL]` Initialiser `InferenceEngine::new(InferenceConfig { model_path: config.model_path, ..Default::default() })`
-- [ ] `[IMPL]` Initialiser `TriggerModule::new(TriggerConfig { socket_path, score_threshold, cooldown_ms, ..Default::default() })`
+- [x] `[IMPL]` Initialiser `AudioCapture::new(AudioCaptureConfig::default())`
+- [x] `[IMPL]` Initialiser `DspRunner::start(DspConfig::default(), rx_pcm, tx_mfcc)`
+- [x] `[IMPL]` Initialiser `InferenceEngine::new(InferenceConfig { model_path: config.model_path, ..Default::default() })`
+- [x] `[IMPL]` Initialiser `TriggerModule::new(TriggerConfig { socket_path, score_threshold, cooldown_ms, ..Default::default() })`
 - [ ] `[TEST-I]` **Test de smoke :** Avec `mock_pipeline`, tous les modules s'initialisent sans erreur
 
 ### P1.3 — Démarrage en séquence
 
-- [ ] `[IMPL]` Démarrer dans l'ordre (inverse de la propagation de signal) :
+- [x] `[IMPL]` Démarrer dans l'ordre (inverse de la propagation de signal) :
   1. `trigger.start(rx_score)`
   2. `engine.start(rx_mfcc, tx_score)`
   3. `dsp_runner` (déjà démarré dans `DspRunner::start`)
   4. `capture.start(tx_pcm)`
-- [ ] `[IMPL]` Logger chaque démarrage réussi avec `tracing::info!`
+- [x] `[IMPL]` Logger chaque démarrage réussi avec `tracing::info!`
 
 ### P1.4 — Arrêt propre
 
-- [ ] `[IMPL]` Implémenter `fn shutdown(...)` qui arrête dans l'ordre inverse :
+- [x] `[IMPL]` Implémenter `fn shutdown(...)` qui arrête dans l'ordre inverse :
   1. `capture.stop()` — ferme `tx_pcm`, signal de fermeture vers DSP
   2. Drop de `tx_pcm` — le `DspRunner` se termine quand `rx_pcm` est épuisé
   3. `engine.stop()`
   4. `trigger.stop()`
-- [ ] `[IMPL]` Chaque `stop()` est appelé même si le précédent a retourné une erreur (log + continue)
+- [x] `[IMPL]` Chaque `stop()` est appelé même si le précédent a retourné une erreur (log + continue)
 - [ ] `[TEST-I]` **Test :** Démarrage → immédiat arrêt → zéro thread zombie, zéro panique
 
 ---
@@ -108,14 +108,14 @@
 
 ### P2.1 — Capture de SIGINT / SIGTERM
 
-- [ ] `[IMPL]` Ajouter dépendance `ctrlc = "3"` dans `[dependencies]`
-- [ ] `[IMPL]` Installer un handler `ctrlc::set_handler` qui lève un `AtomicBool` `shutdown_requested`
-- [ ] `[IMPL]` La boucle principale (`loop { if shutdown.load() { break; } thread::sleep(100ms); }`) se termine dès que le flag est levé
+- [x] `[IMPL]` Ajouter dépendance `ctrlc = "3"` dans `[dependencies]`
+- [x] `[IMPL]` Installer un handler `ctrlc::set_handler` qui lève un `AtomicBool` `shutdown_requested`
+- [x] `[IMPL]` La boucle principale (`loop { if shutdown.load() { break; } thread::sleep(100ms); }`) se termine dès que le flag est levé
 
 ### P2.2 — Logging au démarrage
 
-- [ ] `[IMPL]` Initialiser `tracing_subscriber::fmt().with_max_level(Level::INFO).init()` au début de `main`
-- [ ] `[IMPL]` Logger au démarrage :
+- [x] `[IMPL]` Initialiser `tracing_subscriber::fmt().with_max_level(Level::INFO).init()` au début de `main`
+- [x] `[IMPL]` Logger au démarrage :
   ```
   [INFO] Word Waker daemon démarré
   [INFO] Modèle : <model_path>
@@ -123,12 +123,12 @@
   [INFO] Seuil  : <score_threshold>
   [INFO] Cooldown : <cooldown_ms> ms
   ```
-- [ ] `[IMPL]` Logger à l'arrêt : `[INFO] Arrêt propre — au revoir.`
+- [x] `[IMPL]` Logger à l'arrêt : `[INFO] Arrêt propre — au revoir.`
 
 ### P2.3 — Codes de sortie
 
-- [ ] `[IMPL]` `main` retourne `anyhow::Result<()>` — toute erreur fatale s'affiche avec contexte complet et exit code 1
-- [ ] `[IMPL]` Arrêt normal (SIGINT/SIGTERM) → exit code 0
+- [x] `[IMPL]` `main` retourne `anyhow::Result<()>` — toute erreur fatale s'affiche avec contexte complet et exit code 1
+- [x] `[IMPL]` Arrêt normal (SIGINT/SIGTERM) → exit code 0
 - [ ] `[VALID]` Lancer `cargo run -p daemon -- && echo "exit:$?"` → exit code 0 après Ctrl+C
 
 ---
