@@ -248,3 +248,115 @@ fn perf_notify_latency_under_5ms() {
 
     cleanup(&path);
 }
+
+// ─── P6.2 — Validation des métriques de déclenchement ─────────────────────────
+
+/// P6.2 — Faux positifs : 8 h équivalent de scores uniformément distribués
+/// entre 0.0 et 0.7 → aucun déclenchement (tous < threshold 0.80).
+///
+/// Simulation : 100 fps × 8 h × 3600 s = 2 880 000 scores.
+#[test]
+fn metric_false_positive_rate_zero_on_noise_scores() {
+    let cfg = TriggerConfig {
+        score_threshold: 0.80,
+        vote_threshold: 3,
+        window_size: 5,
+        cooldown_ms: 2000,
+        socket_path: "/tmp/unused_fp.sock".to_string(),
+    };
+    let mut engine = TriggerEngine::new(&cfg);
+
+    // 8h × 3600 s × 100 inférences/s = 2 880 000 scores
+    let n = 8 * 3600 * 100usize;
+    let mut triggers = 0usize;
+
+    for i in 0..n {
+        // Distribution uniforme dans [0.0, 0.7] via LCG déterministe
+        let raw = ((i as u64)
+            .wrapping_mul(6_364_136_223_846_793_005)
+            .wrapping_add(1_442_695_040_888_963_407)
+            >> 33) as f32
+            / u32::MAX as f32;
+        let score = raw * 0.7; // [0.0, 0.7)
+        if engine.push(score) {
+            triggers += 1;
+        }
+    }
+
+    assert_eq!(
+        triggers, 0,
+        "P6.2 faux positifs : {} déclenchements sur {} scores bruit (attendu 0)",
+        triggers, n
+    );
+}
+
+/// P6.2 — Faux négatifs : 500 séquences idéales (3 scores > 0.80 sur 5)
+/// → 100 % déclenchent (taux de faux négatifs = 0 %).
+#[test]
+fn metric_false_negative_rate_zero_on_ideal_sequences() {
+    let cfg = TriggerConfig {
+        score_threshold: 0.80,
+        vote_threshold: 3,
+        window_size: 5,
+        cooldown_ms: 1, // minimal pour permettre 500 détections successives
+        socket_path: "/tmp/unused_fn.sock".to_string(),
+    };
+    let mut engine = TriggerEngine::new(&cfg);
+
+    let sequences = 500usize;
+    let mut detected = 0usize;
+
+    for _ in 0..sequences {
+        engine.reset();
+        let _ = engine.push(0.9);
+        let _ = engine.push(0.5);
+        let _ = engine.push(0.9);
+        let _ = engine.push(0.5);
+        if engine.push(0.9) {
+            detected += 1;
+        }
+    }
+
+    assert_eq!(
+        detected, sequences,
+        "P6.2 faux négatifs : {}/{} séquences détectées (attendu 100 %)",
+        detected, sequences
+    );
+}
+
+/// P6.2 — Latence IPC round-trip complète : `notify()` → réception socket < 5 ms.
+#[test]
+fn metric_ipc_round_trip_latency_under_5ms() {
+    use std::io::Read;
+
+    let path = unique_socket("metric_latency");
+    cleanup(&path);
+
+    let listener = UnixListener::bind(&path).expect("bind failed");
+    let notifier = IpcNotifier::new(path.clone());
+
+    let iterations = 20usize;
+    let mut max_latency = Duration::ZERO;
+
+    for _ in 0..iterations {
+        let t0 = Instant::now();
+        notifier.notify().expect("notify failed");
+        let (mut stream, _) = listener.accept().expect("accept failed");
+        let mut buf = [0u8; 32];
+        let _ = stream.read(&mut buf);
+        let elapsed = t0.elapsed();
+        if elapsed > max_latency {
+            max_latency = elapsed;
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    }
+
+    assert!(
+        max_latency < Duration::from_millis(5),
+        "P6.2 latence IPC max = {:.2} ms (objectif < 5 ms)",
+        max_latency.as_secs_f64() * 1000.0
+    );
+
+    cleanup(&path);
+}
+
