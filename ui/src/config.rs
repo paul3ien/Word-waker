@@ -4,6 +4,7 @@
 //! lisibles depuis les variables d'environnement.
 
 /// Configuration de l'UI Word Waker.
+#[derive(Clone, Debug)]
 pub struct UiConfig {
     /// Chemin du socket IPC (défaut `/tmp/wakeword_daemon.sock`)
     pub socket_path: String,

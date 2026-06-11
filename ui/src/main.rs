@@ -30,6 +30,8 @@ mod socket_client;
 mod status_item;
 
 use config::UiConfig;
+use icrate::Foundation::MainThreadMarker;
+use socket_client::{IpcClient, UiEvent};
 use tracing_subscriber::{fmt, EnvFilter};
 
 fn main() -> anyhow::Result<()> {
@@ -39,14 +41,40 @@ fn main() -> anyhow::Result<()> {
         .with_target(false)
         .init();
 
+    let mtm = MainThreadMarker::new()
+        .ok_or_else(|| anyhow::anyhow!("L'UI doit être lancée depuis le main thread"))?;
+
     let config = UiConfig::from_env();
-    tracing::info!(socket_path = %config.socket_path, "Démarrage de Word Waker UI");
-    tracing::info!("Configuration chargée : {:?}", std::env::args());
+    tracing::info!(
+        socket_path = %config.socket_path,
+        "Démarrage de Word Waker UI"
+    );
 
-    // Placeholder — sera remplacé par l'initialisation NSApplication + IpcClient
-    println!("Word Waker UI — en développement");
-    println!("Socket cible : {}", config.socket_path);
-    println!("Voir ui/stack.md et ui/backlog.md pour le plan d'implémentation.");
+    // Créer le channel de communication socket → UI
+    let (tx_event, rx_event) = crossbeam_channel::unbounded::<UiEvent>();
 
+    // Créer l'application UI (doit être sur le main thread)
+    let app = app::UiApp::new(config.clone(), rx_event, mtm)?;
+
+    // Enregistrer l'AppDelegate pour les callbacks de cycle de vie
+    let _delegate = delegate::AppDelegate::new()?;
+
+    // Lancer le thread client socket
+    let socket_config = config;
+    std::thread::Builder::new()
+        .name("ipc-client".into())
+        .spawn(move || {
+            let client = IpcClient::new(socket_config);
+            client.run(tx_event);
+        })?;
+
+    tracing::info!("Thread socket démarré, lancement de la boucle AppKit");
+    tracing::info!("UI démarrée — applicationDidFinishLaunching");
+
+    // Boucle principale AppKit (bloquant)
+    app.run();
+
+    tracing::info!("UI arrêtée — applicationWillTerminate");
+    tracing::info!("Word Waker UI terminé");
     Ok(())
 }
