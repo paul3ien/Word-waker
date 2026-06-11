@@ -250,8 +250,8 @@
 
 ### P5.2 — Validation sans daemon (mock)
 
-- [ ] `[TEST-I]` **Test complet mock :** `IpcClient` + mock server → événements `Connected`, `WakeWordDetected`, `Disconnected` tous reçus dans l'ordre
-- [ ] `[TEST-I]` **Test de non-régression :** `cargo test -p ui` — tous les tests passent sans daemon ni écran
+- [x] `[TEST-I]` **Test complet mock :** `IpcClient` + mock server → événements `Connected`, `WakeWordDetected`, `Disconnected` tous reçus dans l'ordre
+- [x] `[TEST-I]` **Test de non-régression :** `cargo test -p ui` — tous les tests passent sans daemon ni écran
 - [ ] `[VALID]` `cargo test -p ui` fonctionne en CI (GitHub Actions macOS runner)
 
 ### P5.3 — Robustesse macOS
@@ -264,8 +264,8 @@
 
 ### P5.4 — Intégration workspace
 
-- [ ] `[VALID]` `cargo build --release --workspace` — compile daemon + UI sans conflit de dépendances
-- [ ] `[VALID]` `cargo test --workspace` — tous les tests passent (audio_capture, pipeline_dsp, inference_ml, trigger, integration_test, daemon, ui)
+- [x] `[VALID]` `cargo build --release --workspace` — compile daemon + UI sans conflit de dépendances
+- [x] `[VALID]` `cargo test --workspace` — tous les tests passent (audio_capture, pipeline_dsp, inference_ml, trigger, integration_test, daemon, ui)
 - [ ] `[VALID]` `cargo clippy --workspace -- -D warnings` — zéro warning
 
 ---
