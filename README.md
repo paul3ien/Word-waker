@@ -50,6 +50,7 @@
 | `trigger` | Vote glissant anti-faux-positifs, cooldown, notification via Unix Domain Socket | ✅ Terminé |
 | `integration_test` | Tests d'intégration workspace : `pipeline_dsp → inference_ml → trigger → socket` | ✅ Terminé |
 | `daemon` | Binaire exécutable — câble les 4 crates en pipeline, gère SIGINT/SIGTERM, config via env | 🚧 En cours |
+| `ui` | Application macOS native (NSStatusBar) — se connecte au daemon via socket IPC, affiche l'état en temps réel | 📋 Planifié |
 
 ## Prérequis
 
@@ -65,12 +66,18 @@ pip install coremltools numpy
 
 ## Lancer le daemon
 
+### En terminal (développement)
+
 ```bash
 # Build release
 cargo build --release -p daemon
 
-# Lancer (modèle CoreML requis)
-WAKEWORD_MODEL_PATH=/chemin/vers/WakeWordModel.mlmodelc \
+# Lancer avec le modèle réel (chemin relatif depuis la racine du workspace)
+WAKEWORD_MODEL_PATH=inference_ml/fixtures/real_model/WakeWord.mlmodelc \
+  cargo run --release -p daemon
+
+# Lancer avec le modèle mock (test sans modèle entraîné)
+WAKEWORD_MODEL_PATH=inference_ml/fixtures/mock_model/WakeWordMock.mlmodelc \
   cargo run --release -p daemon
 
 # Écouter les détections dans un autre terminal
@@ -79,6 +86,57 @@ nc -U /tmp/wakeword_daemon.sock
 # Arrêt propre
 # Ctrl+C  →  logs d'arrêt  →  exit 0
 ```
+
+### En arrière-plan sans terminal (LaunchAgent macOS)
+
+Copier le binaire et installer un LaunchAgent pour que le daemon démarre
+automatiquement au login, **sans aucune fenêtre de terminal** :
+
+```bash
+# 1. Build release
+cargo build --release -p daemon
+
+# 2. Copier le binaire dans /usr/local/bin
+sudo cp target/release/word-waker /usr/local/bin/word-waker
+
+# 3. Installer le LaunchAgent (créer le fichier plist)
+mkdir -p ~/Library/LaunchAgents
+cat > ~/Library/LaunchAgents/com.wordwaker.daemon.plist << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>             <string>com.wordwaker.daemon</string>
+  <key>ProgramArguments</key>  <array><string>/usr/local/bin/word-waker</string></array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>WAKEWORD_MODEL_PATH</key>
+    <string>/Users/apple/Documents/Code/Word-waker/inference_ml/fixtures/real_model/WakeWord.mlmodelc</string>
+  </dict>
+  <key>RunAtLoad</key>         <true/>
+  <key>KeepAlive</key>         <true/>
+  <key>StandardOutPath</key>   <string>/tmp/word-waker.log</string>
+  <key>StandardErrorPath</key> <string>/tmp/word-waker.log</string>
+</dict>
+</plist>
+EOF
+
+# 4. Charger le daemon (démarre immédiatement + au prochain login)
+launchctl load ~/Library/LaunchAgents/com.wordwaker.daemon.plist
+
+# Vérifier qu'il tourne
+launchctl list | grep wordwaker
+
+# Voir les logs
+tail -f /tmp/word-waker.log
+
+# Arrêter le daemon
+launchctl unload ~/Library/LaunchAgents/com.wordwaker.daemon.plist
+```
+
+Le daemon tourne silencieusement en arrière-plan, se relance automatiquement
+en cas de crash (`KeepAlive`), et démarre au login sans interaction.
 
 Variables d'environnement disponibles :
 

@@ -1,0 +1,36 @@
+[package]
+name = "ui"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "word-waker-ui"
+path = "src/main.rs"
+
+[dependencies]
+icrate = { version = "0.1.2", features = [
+    "AppKit",
+    "AppKit_NSApplication",
+    "AppKit_NSStatusBar",
+    "AppKit_NSStatusItem",
+    "AppKit_NSMenu",
+    "AppKit_NSMenuItem",
+    "AppKit_NSImage",
+    "AppKit_NSRunningApplication",
+    "AppKit_NSButton",
+    "AppKit_NSTextField",
+    "AppKit_NSView",
+    "AppKit_NSLayoutConstraint",
+    "AppKit_NSWindow",
+    "Foundation",
+    "Foundation_NSThread",
+    "Foundation_NSRunLoop",
+    "Foundation_NSTimer",
+    "Foundation_NSProcessInfo",
+] }
+objc2 = "0.6"
+objc2-foundation = "0.3"
+crossbeam-channel = "0.5"
+anyhow = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }

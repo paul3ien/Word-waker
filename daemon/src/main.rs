@@ -3,7 +3,8 @@
 //! # Utilisation
 //!
 //! ```bash
-//! WAKEWORD_MODEL_PATH=/chemin/vers/WakeWord.mlmodelc word-waker
+//! WAKEWORD_MODEL_PATH=/Users/apple/Documents/Code/Word-waker/inference_ml/fixtures/real_model/WakeWord.mlmodelc \
+//!   cargo run --release -p daemon
 //! ```
 //!
 //! Variables d'environnement disponibles :
