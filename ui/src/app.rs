@@ -13,6 +13,7 @@ use tracing;
 
 use crate::config::UiConfig;
 use crate::error::UiError;
+use crate::panel::DetectionsPanel;
 use crate::socket_client::UiEvent;
 use crate::status_item::MenuBarIcon;
 
@@ -23,6 +24,8 @@ pub struct UiApp {
     app: icrate::objc2::rc::Id<NSApplication>,
     status_item: Arc<MenuBarIcon>,
     last_detection: Arc<Mutex<Option<Instant>>>,
+    /// Panneau d'historique des détections
+    panel: Arc<DetectionsPanel>,
 }
 
 impl UiApp {
@@ -34,25 +37,27 @@ impl UiApp {
         let status_item = MenuBarIcon::new(mtm)?;
         status_item.update_state(&UiEvent::Connected);
 
-        tracing::info!("NSApplication initialisée, StatusItem créé");
+        // Créer le panel d'historique
+        let panel = DetectionsPanel::new(mtm)?;
+
+        tracing::info!("NSApplication initialisée, StatusItem et Panel créés");
 
         Ok(Self {
             config,
             app,
             status_item: Arc::new(status_item),
             last_detection: Arc::new(Mutex::new(None)),
+            panel: Arc::new(panel),
         })
     }
 
     /// Lance la boucle d'événements AppKit.
-    /// Le bridge socket → UI se fait via un thread de fond qui met à jour
-    /// le StatusItem. Pour le POC, les mutations UI depuis un thread non-main
-    /// sont acceptables.
     pub fn run(&self, event_rx: Receiver<UiEvent>) -> anyhow::Result<()> {
         tracing::info!("Démarrage de la boucle d'événements AppKit");
 
         let status_item = Arc::clone(&self.status_item);
         let last_detection = Arc::clone(&self.last_detection);
+        let panel = Arc::clone(&self.panel);
 
         // Thread de fond : poll le channel et met à jour l'UI
         std::thread::Builder::new()
@@ -81,8 +86,9 @@ impl UiApp {
 
                     for event in &events {
                         status_item.update_state(event);
-                        if matches!(event, UiEvent::WakeWordDetected { .. }) {
+                        if let UiEvent::WakeWordDetected { timestamp } = event {
                             *last_detection.lock().unwrap() = Some(now);
+                            panel.add_detection(*timestamp);
                         }
                     }
 
@@ -106,5 +112,10 @@ impl UiApp {
 
         tracing::info!("RunLoop AppKit terminée");
         Ok(())
+    }
+
+    /// Affiche le panel d'historique.
+    pub fn show_history_panel(&self) {
+        self.panel.show();
     }
 }

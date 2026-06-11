@@ -36,6 +36,8 @@ pub struct MenuBarIcon {
     detection_count: Mutex<u64>,
     /// Item de menu affichant le compteur
     counter_item: Id<NSMenuItem>,
+    /// Item de menu "Historique..."
+    history_item: Id<NSMenuItem>,
 }
 
 impl MenuBarIcon {
@@ -45,7 +47,7 @@ impl MenuBarIcon {
         let status_item = unsafe { status_bar.statusItemWithLength(NSVariableStatusItemLength) };
 
         // Créer le menu (inclut le compteur)
-        let (menu, counter_item) = Self::build_menu(mtm)?;
+        let (menu, counter_item, history_item) = Self::build_menu(mtm)?;
 
         // Associer le menu au status item
         unsafe {
@@ -58,6 +60,7 @@ impl MenuBarIcon {
             state: Mutex::new(DaemonState::Connected),
             detection_count: Mutex::new(0),
             counter_item,
+            history_item,
         })
     }
 
@@ -164,7 +167,9 @@ impl MenuBarIcon {
 
     /// Construit le menu contextuel du StatusItem.
     /// Retourne le menu et l'item "compteur" pour mise à jour ultérieure.
-    fn build_menu(mtm: MainThreadMarker) -> Result<(Id<NSMenu>, Id<NSMenuItem>), UiError> {
+    fn build_menu(
+        mtm: MainThreadMarker,
+    ) -> Result<(Id<NSMenu>, Id<NSMenuItem>, Id<NSMenuItem>), UiError> {
         let menu = NSMenu::new(mtm);
 
         // Item compteur de détections (en haut du menu)
@@ -176,6 +181,15 @@ impl MenuBarIcon {
             counter_item.setEnabled(false);
         }
         menu.addItem(&counter_item);
+
+        // Item "Historique..."
+        let history_label = NSString::from_str("Historique...");
+        let history_item = NSMenuItem::new(mtm);
+        unsafe {
+            history_item.setTitle(&history_label);
+            // Action gérée dans UiApp via setTarget/setAction
+        }
+        menu.addItem(&history_item);
 
         // Ajouter le séparateur
         let separator = NSMenuItem::separatorItem(mtm);
@@ -191,7 +205,7 @@ impl MenuBarIcon {
         }
         menu.addItem(&quit_item);
 
-        Ok((menu, counter_item))
+        Ok((menu, counter_item, history_item))
     }
 }
 

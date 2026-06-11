@@ -4,6 +4,7 @@ mod app;
 mod config;
 mod delegate;
 mod error;
+mod panel;
 mod socket_client;
 mod status_item;
 
